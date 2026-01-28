@@ -3,16 +3,21 @@ from PIL import Image
 from midiutil import MIDIFile
 import io
 import os
+import tempfile
 import numpy as np
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
-app.config['UPLOAD_FOLDER'] = 'uploads'
-app.config['OUTPUT_FOLDER'] = 'outputs'
+_tmp_base = os.environ.get("TMPDIR") or tempfile.gettempdir()
+# Vercel serverless runtime is read-only except /tmp, so keep writable dirs there.
+app.config['UPLOAD_FOLDER'] = os.environ.get("UPLOAD_FOLDER") or os.path.join(_tmp_base, "uploads")
+app.config['OUTPUT_FOLDER'] = os.environ.get("OUTPUT_FOLDER") or os.path.join(_tmp_base, "outputs")
 
-# Create folders if they don't exist
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-os.makedirs(app.config['OUTPUT_FOLDER'], exist_ok=True)
+
+def _ensure_writable_dirs() -> None:
+    """Ensure writable dirs exist (safe for serverless)."""
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    os.makedirs(app.config['OUTPUT_FOLDER'], exist_ok=True)
 
 
 def detect_background_type(img_array):
@@ -330,6 +335,7 @@ def index():
 @app.route('/convert', methods=['POST'])
 def convert_image():
     try:
+        _ensure_writable_dirs()
         # Get parameters from form
         width_notes = int(request.form.get('width_notes', 200))
         height_notes = int(request.form.get('height_notes', 120))
