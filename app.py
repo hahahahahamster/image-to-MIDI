@@ -18,31 +18,43 @@ os.makedirs(app.config['OUTPUT_FOLDER'], exist_ok=True)
 def detect_background_type(img_array):
     """
     Detect if image has dark or light background.
-    Uses edge brightness, global median, and histogram so white-background
-    images (e.g. white + black/colored pattern) are reliably classified as 'light'.
+    - Light bg: most pixels bright (e.g. white + dark pattern).
+    - Dark bg:  most pixels dark (e.g. black + bright pattern).
     """
-    h, w = img_array.shape
     flat = img_array.flatten()
+    med = float(np.median(flat))
+    mean = float(np.mean(flat))
 
-    # 1) Edge brightness (top/bottom/left/right)
+    # Fraction of pixels that are bright vs dark
+    bright_ratio = np.sum(flat >= 180) / flat.size   # white-ish
+    dark_ratio = np.sum(flat <= 80) / flat.size     # black-ish
+
+    # Edge brightness – often reflects background
     edge = np.concatenate([img_array[0, :], img_array[-1, :], img_array[:, 0], img_array[:, -1]])
     edge_mean = float(np.mean(edge))
 
-    # 2) Global median: white-background images have median in the bright range
-    med = float(np.median(flat))
-
-    # 3) Fraction of pixels that are "bright" (e.g. > 180) – dominant in white bg
-    bright_ratio = np.sum(flat >= 180) / flat.size
-
-    # Classify: prefer 'light' when edges or overall image looks white
-    if edge_mean >= 180 or med >= 200:
+    # Clearly white background: edges bright, most pixels bright
+    if edge_mean >= 180 and bright_ratio >= 0.35:
         return 'light'
-    if edge_mean <= 80 or med <= 80:
-        return 'dark'
-    if bright_ratio >= 0.4:
+    if edge_mean >= 200 or (bright_ratio >= 0.5 and med >= 180):
         return 'light'
-    if bright_ratio <= 0.15 and med < 140:
+
+    # Clearly black background: edges dark, most pixels dark
+    if edge_mean <= 80 and dark_ratio >= 0.35:
         return 'dark'
+    if edge_mean <= 60 or (dark_ratio >= 0.5 and med <= 80):
+        return 'dark'
+
+    # Gray / mixed: use median and ratios
+    if dark_ratio >= 0.4 and med < 100:
+        return 'dark'
+    if bright_ratio >= 0.4 and med > 150:
+        return 'light'
+    # Tie-break: whichever side (dark/bright) dominates
+    if dark_ratio > bright_ratio + 0.1:
+        return 'dark'
+    if bright_ratio > dark_ratio + 0.1:
+        return 'light'
     return 'light' if med >= 128 else 'dark'
 
 
@@ -301,13 +313,12 @@ def process_image_intelligently(img, threshold, auto_detect=True, background=Non
     min_area_ratio = max(0.001, min(0.008, 40.0 / (h * w)))
     solid_mask = extract_main_contours(solid_mask, min_area_ratio=min_area_ratio)
     
-    # Step 7: For LIGHT background, notes = pattern (dark), empty = white.
-    # If by mistake most of the mask is True (white area), invert so pattern = notes.
-    if bg_type == 'light':
-        fill_ratio = np.sum(solid_mask) / solid_mask.size
-        if fill_ratio > 0.5:
-            solid_mask = np.logical_not(solid_mask)
-    
+    # Step 7: Ensure notes = pattern, empty = background.
+    # If most pixels are True, we're marking background → invert so pattern = notes.
+    fill_ratio = np.sum(solid_mask) / solid_mask.size
+    if fill_ratio > 0.5:
+        solid_mask = np.logical_not(solid_mask)
+
     return solid_mask
 
 
