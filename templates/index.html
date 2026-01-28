@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image to MIDI Converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        .label-hint {
+            color: #888;
+            font-weight: normal;
+            font-size: 0.85em;
+            margin-left: 5px;
+        }
+
+        input[type="number"],
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus,
+        input[type="file"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input[type="file"] {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .checkbox-label {
+            margin: 0;
+            font-weight: normal;
+            cursor: pointer;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .preview-section {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .success-message {
+            background: #efe;
+            color: #3c3;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .param-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .drop-zone {
+            border: 2px dashed #ccc;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            background: #fafafa;
+        }
+
+        .drop-zone:hover,
+        .drop-zone.drag-over {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .drop-zone-label {
+            color: #666;
+            font-size: 0.95em;
+            margin-bottom: 6px;
+        }
+
+        .drop-zone-hint {
+            color: #999;
+            font-size: 0.85em;
+        }
+
+        input[type="file"].drop-zone-input {
+            position: absolute;
+            width: 0;
+            height: 0;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .upload-area {
+            position: relative;
+        }
+
+        @media (max-width: 640px) {
+            .param-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 Image to MIDI</h1>
+        <p class="subtitle">Convert any image into minimalist MIDI notes</p>
+
+        <form id="convertForm" enctype="multipart/form-data">
+            <div class="form-group upload-area">
+                <label for="image">Image</label>
+                <div class="drop-zone" id="dropZone">
+                    <div class="drop-zone-label" id="dropZoneLabel">Drag & drop an image here, or click to choose</div>
+                    <div class="drop-zone-hint">You can also paste from clipboard (Ctrl+V / Cmd+V)</div>
+                    <input type="file" id="image" name="image" accept="image/*" class="drop-zone-input">
+                </div>
+            </div>
+
+            <div class="param-grid">
+                <div class="form-group">
+                    <label for="width_notes">
+                        Width (Notes)
+                        <span class="label-hint">Song length</span>
+                    </label>
+                    <input type="number" id="width_notes" name="width_notes" value="200" min="1" max="1000" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="height_notes">
+                        Height (Notes)
+                        <span class="label-hint">Pitch range</span>
+                    </label>
+                    <input type="number" id="height_notes" name="height_notes" value="120" min="1" max="400" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="start_note">
+                        Start Note
+                        <span class="label-hint">Lowest pitch (36 = C2)</span>
+                    </label>
+                    <input type="number" id="start_note" name="start_note" value="36" min="0" max="127" required>
+                    <div id="pitchRangeInfo" style="margin-top: 5px; font-size: 0.85em; color: #666;"></div>
+                    <div id="pitchRangeWarning" style="margin-top: 5px; font-size: 0.85em; color: #c33; display: none;"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="threshold">
+                        Threshold
+                        <span class="label-hint">Brightness (0-255)</span>
+                    </label>
+                    <input type="number" id="threshold" name="threshold" value="100" min="0" max="255" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="background">Background</label>
+                <select id="background" name="background" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1em;">
+                    <option value="auto">Auto-detect</option>
+                    <option value="light">White background (pattern = notes)</option>
+                    <option value="dark">Black background (pattern = notes)</option>
+                </select>
+                <div class="label-hint" style="margin-top: 4px;">Use “White background” if your image is white with dark/colored pattern and the result is reversed.</div>
+            </div>
+
+            <div class="preview-section">
+                <label>Image Preview</label>
+                <img id="preview" class="preview-image" alt="Preview">
+            </div>
+
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
+
+            <div class="button-group">
+                <button type="button" class="btn-secondary" onclick="resetForm()">Reset</button>
+                <button type="submit" class="btn-primary" id="convertBtn">Convert to MIDI</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const imageInput = document.getElementById('image');
+        const dropZone = document.getElementById('dropZone');
+        const dropZoneLabel = document.getElementById('dropZoneLabel');
+        const preview = document.getElementById('preview');
+        const convertForm = document.getElementById('convertForm');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+        const convertBtn = document.getElementById('convertBtn');
+        const pitchRangeInfo = document.getElementById('pitchRangeInfo');
+        const pitchRangeWarning = document.getElementById('pitchRangeWarning');
+        
+        // Current image source: File or null. Used for paste/drop/file input.
+        let currentImageFile = null;
+        
+        // MIDI note names
+        const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        
+        function getNoteName(midiNote) {
+            const octave = Math.floor(midiNote / 12) - 1;
+            const note = midiNote % 12;
+            return noteNames[note] + octave;
+        }
+        
+        function updatePitchRange() {
+            const startNote = parseInt(document.getElementById('start_note').value) || 36;
+            const heightNotes = parseInt(document.getElementById('height_notes').value) || 120;
+            const maxPitch = startNote + heightNotes - 1;
+            
+            const startNoteName = getNoteName(startNote);
+            const maxNoteName = getNoteName(Math.min(maxPitch, 127));
+            
+            if (maxPitch > 127) {
+                pitchRangeInfo.textContent = `Pitch range: ${startNoteName} to ${getNoteName(127)} (C8) - Will be scaled down`;
+                pitchRangeInfo.style.color = '#c33';
+                pitchRangeWarning.textContent = `Warning: Maximum pitch ${maxNoteName} exceeds MIDI limit (C8). Notes will be automatically scaled to fit.`;
+                pitchRangeWarning.style.display = 'block';
+            } else {
+                pitchRangeInfo.textContent = `Pitch range: ${startNoteName} to ${maxNoteName}`;
+                pitchRangeInfo.style.color = '#666';
+                pitchRangeWarning.style.display = 'none';
+            }
+        }
+        
+        // Update pitch range when parameters change
+        document.getElementById('start_note').addEventListener('input', updatePitchRange);
+        document.getElementById('height_notes').addEventListener('input', updatePitchRange);
+        
+        // Initial update
+        updatePitchRange();
+
+        function setImageFromFile(file) {
+            if (!file || !file.type.startsWith('image/')) return;
+            currentImageFile = file;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+            dropZoneLabel.textContent = file.name || 'Image loaded';
+        }
+
+        // Click drop zone = open file picker
+        dropZone.addEventListener('click', function(e) {
+            if (!e.target.classList.contains('drop-zone-input')) imageInput.click();
+        });
+
+        // File input change
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) setImageFromFile(file);
+        });
+
+        // Drag & drop
+        dropZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.add('drag-over');
+        });
+        dropZone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.remove('drag-over');
+        });
+        dropZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (file) setImageFromFile(file);
+        });
+
+        // Paste from clipboard
+        document.addEventListener('paste', function(e) {
+            const items = e.clipboardData?.items;
+            if (!items) return;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.startsWith('image/')) {
+                    e.preventDefault();
+                    const file = items[i].getAsFile();
+                    if (file) setImageFromFile(file);
+                    break;
+                }
+            }
+        });
+
+        // Handle form submission
+        convertForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!currentImageFile) {
+                errorMessage.textContent = 'Please add an image (upload, paste, or drag & drop).';
+                errorMessage.style.display = 'block';
+                return;
+            }
+            
+            // Hide previous messages
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+            
+            // Disable button
+            convertBtn.disabled = true;
+            convertBtn.textContent = 'Converting...';
+
+            const formData = new FormData(convertForm);
+            formData.set('image', currentImageFile);
+
+            try {
+                const response = await fetch('/convert', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    // Download MIDI file
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'image_to_midi.mid';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+
+                    successMessage.textContent = 'MIDI file generated successfully! Download started.';
+                    successMessage.style.display = 'block';
+                } else {
+                    const error = await response.json();
+                    errorMessage.textContent = error.error || 'An error occurred';
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                errorMessage.textContent = 'Network error: ' + error.message;
+                errorMessage.style.display = 'block';
+            } finally {
+                convertBtn.disabled = false;
+                convertBtn.textContent = 'Convert to MIDI';
+            }
+        });
+
+        function resetForm() {
+            convertForm.reset();
+            currentImageFile = null;
+            preview.style.display = 'none';
+            preview.src = '';
+            dropZoneLabel.textContent = 'Drag & drop an image here, or click to choose';
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+            updatePitchRange();
+        }
+    </script>
+</body>
+</html>

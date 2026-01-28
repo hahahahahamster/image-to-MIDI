@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.env
+.venv/
+env/
+
+# Flask / uploads
+uploads/
+outputs/
+*.mid
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local test assets (optional: remove to ignore sample images)
+# *.jpg
+# *.png
