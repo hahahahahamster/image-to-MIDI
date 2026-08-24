@@ -1,0 +1,10 @@
+{
+  "name": "image-to-midi-cloudflare",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Static, privacy-first image to MIDI converter for Cloudflare Pages",
+  "scripts": {
+    "test": "node tests/modified-test.cjs",
+    "preview": "npx wrangler pages dev public"
+  }
+}

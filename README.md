@@ -1,6 +1,8 @@
 # Image to MIDI Converter
 
-A web application that converts images into minimalist MIDI files. Intelligently handles dark backgrounds, light backgrounds, and color images to extract clean musical notes.
+A free web application that converts image shapes into playable MIDI notes. The Cloudflare Pages version processes images entirely in the browser, previews the generated sequence with a built-in Web Audio synth, and downloads a Standard MIDI File.
+
+**Live site:** https://image-to-midi-converter.pages.dev/
 
 ## Features
 
@@ -8,8 +10,39 @@ A web application that converts images into minimalist MIDI files. Intelligently
 - 🎵 **Customizable Parameters**: Adjust width, height, start note, and threshold
 - 🌐 **Web Interface**: Beautiful, modern UI for easy image upload and conversion
 - 📥 **Instant Download**: Generated MIDI files download automatically
+- ▶ **Online MIDI Preview**: Play, pause, stop, seek, and change preview volume after conversion
+- 🔒 **Private Browser Processing**: The Cloudflare version does not upload or store images
+- 🔎 **SEO/GEO Ready**: Canonical metadata, structured data, sitemap, robots.txt, and llms.txt
 
-## Installation
+## Cloudflare Pages version
+
+The production site is a static HTML/CSS/JavaScript app in [`public/`](./public). Image decoding, note extraction, MIDI generation, and audio preview all use browser APIs, so the feature works on Cloudflare Pages without a Python runtime, server function, database, or paid service.
+
+### Local development
+
+```bash
+npm test
+npm run preview
+```
+
+### Deploy
+
+```bash
+npx wrangler whoami
+npx wrangler pages deploy public --project-name=image-to-midi-converter --branch=main
+```
+
+Cloudflare assigns the free domain `https://image-to-midi-converter.pages.dev/`.
+
+### Browser playback
+
+After **Convert and download** finishes, the MIDI player appears below the piano-roll preview. It uses the Web Audio API and a lightweight triangle-wave synth. The downloaded MIDI contains note timing and pitch data only; the final sound depends on the instrument selected in a DAW.
+
+## Legacy Flask version
+
+The original Python/Flask implementation remains available in `app.py`.
+
+### Flask installation
 
 1. Install Python 3.8 or higher
 
@@ -18,7 +51,7 @@ A web application that converts images into minimalist MIDI files. Intelligently
 pip install -r requirements.txt
 ```
 
-## Usage
+### Flask usage
 
 1. Start the web server:
 ```bash

@@ -1,0 +1,96 @@
+Image to MIDI — Cloudflare Pages deployment and playback verification
+Date: 2026-08-24
+
+CHANGED BRANCH/FIELD
+branch: main (source commit retained at 45fbc1cf64e5bf145ddfa3d1c5238189b76d2711; GitHub commit is created after this verification)
+field: Cloudflare Pages static client-side image-to-MIDI conversion, SEO/GEO discoverability, and browser MIDI playback
+original source commit: 45fbc1cf64e5bf145ddfa3d1c5238189b76d2711
+production project: image-to-midi-converter
+production free domain: https://image-to-midi-converter.pages.dev/
+latest immutable deployment: https://27f84ea0.image-to-midi-converter.pages.dev
+previous immutable deployment: https://9af5d246.image-to-midi-converter.pages.dev
+
+FOUR ARTIFACT PATHS
+MODIFIED_FILE: C:\Users\LENOVO\Documents\Playground\image-to-midi-cloudflare-20260824\public\index.html
+DIFF_FILE: C:\Users\LENOVO\Documents\Playground\image-to-midi-cloudflare-20260824\deployment-artifacts\DIFF_FILE.patch
+VERIFICATION.txt: C:\Users\LENOVO\Documents\Playground\image-to-midi-cloudflare-20260824\deployment-artifacts\VERIFICATION.txt
+executable ROLLBACK.sh: C:\Users\LENOVO\Documents\Playground\image-to-midi-cloudflare-20260824\deployment-artifacts\ROLLBACK.sh
+
+BASELINE
+Exact command: python -
+Exact input: stdin Python creates a 16x16 RGB black PNG with a white rectangle at coordinates (4,4)-(11,11), then Flask test_client sends GET / and POST /convert with image=fixture.png, width_notes=16, height_notes=16, start_note=36, threshold=100, auto_detect=true, background="".
+Literal output/result:
+BASELINE home_status=200 title_present=True
+BASELINE convert_status=200 mimetype=audio/midi midi_header=4d546864 bytes=494
+BASELINE_EXIT=0
+Exit status: 0
+
+MODIFIED
+Exact command: npm test
+Exact input: none; tests/modified-test.cjs loads public/converter-core.js, uses a 6x4 dark grayscale fixture with a 2x2 bright shape, validates MIDI output and note timing, and checks title, canonical URL, WebApplication/HowTo/FAQPage schema, Web Audio player markup, robots.txt, sitemap.xml, llms.txt, manifest, social image, and headers file.
+Literal output/result:
+> image-to-midi-cloudflare@1.0.0 test
+> node tests/modified-test.cjs
+
+MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true background=dark midi_header=MThd midi_bytes=66 note_shapes=2 player_notes=2
+MODIFIED_EXIT=0
+Exit status: 0
+
+ROLLBACK
+Exact command: "C:\Program Files\Git\bin\bash.exe" "C:\Users\LENOVO\Documents\Playground\rollback-test-image-to-midi-20260824-1827\deployment-artifacts\ROLLBACK.sh"
+Exact input: rollback-test copy C:\Users\LENOVO\Documents\Playground\rollback-test-image-to-midi-20260824-1827 containing the modified public/, package.json, tests/, wrangler.jsonc, README.md, .gitignore, and deployment-artifacts/ over original commit 45fbc1cf64e5bf145ddfa3d1c5238189b76d2711.
+Literal output/result:
+HEAD is now at 45fbc1c Fix Vercel serverless read-only filesystem
+Removing package.json
+Removing public/
+Removing tests/
+Removing wrangler.jsonc
+ROLLBACK source_head=45fbc1cf64e5bf145ddfa3d1c5238189b76d2711 public_index=absent package_json=absent original_flask=present
+ROLLBACK_EXIT=0
+Exit status: 0
+
+Restored behavior command: python -
+Restored behavior input: same 16x16 synthetic PNG and form fields used by BASELINE, executed inside the rollback-test copy.
+Literal restored behavior/result:
+ROLLBACK_TEST home_status=200 title_present=True
+ROLLBACK_TEST convert_status=200 mimetype=audio/midi midi_header=4d546864 bytes=494
+ROLLBACK_TEST_EXIT=0
+Restored behavior/status: original Flask app is present at the original commit; GET / returns 200; POST /convert returns audio/midi with MThd header; Cloudflare-only public/index.html and package.json are absent in the rollback copy.
+
+DEPLOYMENT
+Exact auth command: npx --yes wrangler@latest whoami
+Literal result: OAuth-authenticated Cloudflare account; pages write scope present.
+Exit status: 0
+
+Exact deploy command: npx --yes wrangler@latest pages deploy public --project-name=image-to-midi-converter --branch=main --commit-hash=45fbc1cf64e5bf145ddfa3d1c5238189b76d2711 --commit-message="Add local MIDI playback preview"
+Literal result: Deployment complete; https://27f84ea0.image-to-midi-converter.pages.dev
+Exit status: 0
+
+PRODUCTION HTTP CHECK
+Exact command: curl.exe GET checks against https://image-to-midi-converter.pages.dev/ for /, /robots.txt, /sitemap.xml, /llms.txt, /og-image.png, plus SHA-256 comparison of /converter-core.js and response-header inspection.
+Literal output/result:
+REMOTE home=200 robots=200 sitemap=200 llms=200 og=200 title=True canonical=True player=True csp=True core_sha_match=True
+Exit status: 0
+
+PRODUCTION BROWSER CHECK
+Exact command: npx --yes --package @playwright/cli playwright-cli -s=image-midi-2 (goto production, click "Use demo pattern", click "Convert and download", click "Play MIDI preview", inspect status, position, duration, downloaded file, and console)
+Exact input: generated 720x420 demo-heart.png, default 200x88 grid, lowest note 36, 120 BPM, auto background.
+Literal output/result:
+PRODUCTION_BROWSER url=https://image-to-midi-converter.pages.dev/ download=demo-heart-to-midi.mid midi_header=MThd bytes=1203 play_label=Pause status="Playing 144 note shapes with the browser synth." position=251 duration=0:25 no_horizontal_overflow=true console_errors=0
+Exit status: 0
+
+SEO/GEO RESULT
+- Descriptive title, meta description, canonical, robots directives, Open Graph, Twitter Card.
+- WebApplication, HowTo, and FAQPage JSON-LD.
+- Crawlable explanatory copy, direct definition, conversion steps, DAW compatibility, and FAQ answers.
+- robots.txt, sitemap.xml, llms.txt, web manifest, 1200x630 social image.
+- Client-side processing removes the server upload path and supports the privacy claim.
+- Accessible labels, live status, keyboard focus, reduced motion, 44px+ controls, and responsive mobile layout.
+
+PLAYBACK RESULT
+- Cloudflare Pages supports this feature because playback is entirely client-side Web Audio API; no Worker, server function, database, or paid media service is required.
+- The player appears after conversion and provides Play/Pause, Stop, seek position, duration, and volume controls.
+- Playback uses a triangle-wave synth envelope and MIDI pitch/timing data locally in the browser; downloaded .mid output remains available.
+
+GITHUB
+The complete Cloudflare Pages app, playback feature, SEO/GEO assets, tests, README, wrangler config, and verification artifacts are committed and pushed to https://github.com/hahahahahamster/image-to-MIDI.

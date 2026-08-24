@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Image to MIDI Converter – Free Online PNG/JPG to MIDI</title>
+  <meta name="description" content="Convert PNG, JPG, GIF, BMP, and WebP images into MIDI files for free, preview the notes online, and download the result. Private browser processing.">
+  <meta name="keywords" content="image to MIDI, image MIDI converter, picture to MIDI, PNG to MIDI, JPG to MIDI, MIDI art, piano roll art">
+  <meta name="author" content="Image to MIDI Converter">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="theme-color" content="#171412">
+  <link rel="canonical" href="https://image-to-midi-converter.pages.dev/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Image to MIDI Converter">
+  <meta property="og:title" content="Free Image to MIDI Converter">
+  <meta property="og:description" content="Turn an image into a MIDI piano-roll pattern, preview it with a built-in synth, and download the .mid file. No image upload required.">
+  <meta property="og:url" content="https://image-to-midi-converter.pages.dev/">
+  <meta property="og:image" content="https://image-to-midi-converter.pages.dev/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Image to MIDI Converter interface with a colorful piano roll">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Free Image to MIDI Converter">
+  <meta name="twitter:description" content="Convert PNG and JPG images to MIDI locally in your browser.">
+  <meta name="twitter:image" content="https://image-to-midi-converter.pages.dev/og-image.png">
+  <link rel="stylesheet" href="/styles.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "@id": "https://image-to-midi-converter.pages.dev/#app",
+        "name": "Image to MIDI Converter",
+        "url": "https://image-to-midi-converter.pages.dev/",
+        "description": "A free browser-based tool that maps image pixels to musical notes, previews them with a built-in synthesizer, and exports a Standard MIDI File.",
+        "applicationCategory": "MultimediaApplication",
+        "operatingSystem": "Any modern web browser",
+        "browserRequirements": "Requires JavaScript and Canvas support",
+        "isAccessibleForFree": true,
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+        "featureList": [
+          "PNG, JPG, GIF, BMP, and WebP image input",
+          "Automatic light or dark background detection",
+          "Adjustable note width, pitch range, threshold, and tempo",
+          "Local browser processing with no image upload",
+          "Built-in Web Audio synthesizer preview",
+          "Standard MIDI File download"
+        ]
+      },
+      {
+        "@type": "HowTo",
+        "@id": "https://image-to-midi-converter.pages.dev/#howto",
+        "name": "How to convert an image to MIDI",
+        "totalTime": "PT1M",
+        "step": [
+          {"@type": "HowToStep", "position": 1, "name": "Choose an image", "text": "Upload, drag, or paste a PNG, JPG, GIF, BMP, or WebP image."},
+          {"@type": "HowToStep", "position": 2, "name": "Adjust conversion settings", "text": "Choose the time resolution, pitch range, starting MIDI note, threshold, background mode, and tempo."},
+          {"@type": "HowToStep", "position": 3, "name": "Download the MIDI file", "text": "Select Convert and download, then import the generated .mid file into a DAW or notation app."}
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://image-to-midi-converter.pages.dev/#faq",
+        "mainEntity": [
+          {"@type": "Question", "name": "How does image-to-MIDI conversion work?", "acceptedAnswer": {"@type": "Answer", "text": "The image is reduced to a note grid. Horizontal position becomes time, vertical position becomes pitch, and detected foreground shapes become MIDI notes."}},
+          {"@type": "Question", "name": "Are uploaded images stored?", "acceptedAnswer": {"@type": "Answer", "text": "No. The converter processes the image locally in your browser and does not send it to a server."}},
+          {"@type": "Question", "name": "Which image formats are supported?", "acceptedAnswer": {"@type": "Answer", "text": "Common browser-readable formats are supported, including PNG, JPEG, GIF, BMP, and WebP."}},
+          {"@type": "Question", "name": "Can I listen to the MIDI before opening a DAW?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. After conversion, the built-in browser synthesizer can play, pause, stop, seek, and adjust the volume of the generated note sequence."}},
+          {"@type": "Question", "name": "Where can I use the downloaded MIDI file?", "acceptedAnswer": {"@type": "Answer", "text": "You can import it into DAWs and notation tools that accept Standard MIDI Files, including FL Studio, Ableton Live, Logic Pro, Reaper, and MuseScore."}}
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#converter">Skip to converter</a>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="Image to MIDI Converter home">
+      <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+        <rect x="2" y="2" width="36" height="36" rx="10" fill="currentColor" opacity=".14"/>
+        <path d="M11 27V14l17-3v13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="14" cy="27" r="4" fill="currentColor"/><circle cx="28" cy="24" r="4" fill="currentColor"/>
+      </svg>
+      <span>Image to MIDI</span>
+    </a>
+    <nav aria-label="Primary navigation">
+      <a href="#how-it-works">How it works</a>
+      <a href="#faq">FAQ</a>
+      <a class="source-link" href="https://github.com/hahahahahamster/image-to-MIDI" target="_blank" rel="noopener noreferrer">Source code<span class="sr-only"> (opens in a new tab)</span></a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="page-title">
+      <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span> Free · private · browser-based</p>
+      <h1 id="page-title">Turn any image into <span>MIDI notes</span></h1>
+      <p class="hero-copy">Map shapes, drawings, logos, and photos onto a playable piano roll. Your image stays on your device—the entire conversion runs locally in your browser.</p>
+      <ul class="benefit-list" aria-label="Key benefits">
+        <li><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 10 3 3 7-7"/></svg>No account or upload</li>
+        <li><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 10 3 3 7-7"/></svg>Works with PNG, JPG & WebP</li>
+        <li><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 10 3 3 7-7"/></svg>Built-in synth preview</li>
+        <li><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 10 3 3 7-7"/></svg>DAW-ready .mid download</li>
+      </ul>
+    </section>
+
+    <section class="converter-shell" id="converter" aria-labelledby="converter-title">
+      <div class="section-heading">
+        <div>
+          <p class="step-label">Image converter</p>
+          <h2 id="converter-title">Create your MIDI file</h2>
+        </div>
+        <span class="privacy-badge">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2 4 5v4c0 4 2.5 7.2 6 9 3.5-1.8 6-5 6-9V5l-6-3Z"/><path d="m7.5 10 1.6 1.6 3.5-3.7"/></svg>
+          Local processing
+        </span>
+      </div>
+
+      <form id="convert-form" novalidate>
+        <div class="upload-grid">
+          <div>
+            <label class="drop-zone" id="drop-zone" for="image-input">
+              <input id="image-input" name="image" type="file" accept="image/png,image/jpeg,image/gif,image/bmp,image/webp" hidden>
+              <span class="upload-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/></svg>
+              </span>
+              <strong id="drop-title">Drop an image here</strong>
+              <span id="drop-copy">or choose a file from your device</span>
+              <span class="file-types">PNG, JPG, GIF, BMP, WebP · up to 16 MB</span>
+            </label>
+            <div class="upload-actions">
+              <button class="button button-quiet" id="demo-button" type="button">Use demo pattern</button>
+              <span>Paste an image with <kbd>Ctrl</kbd> + <kbd>V</kbd></span>
+            </div>
+          </div>
+
+          <div class="preview-card" id="preview-card">
+            <div class="preview-header">
+              <span>Input preview</span>
+              <button class="icon-button" id="clear-button" type="button" aria-label="Remove selected image" hidden>
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 6 8 8m0-8-8 8"/></svg>
+              </button>
+            </div>
+            <div class="preview-stage">
+              <svg id="preview-placeholder" viewBox="0 0 120 90" aria-hidden="true">
+                <rect x="14" y="12" width="92" height="66" rx="8"/>
+                <circle cx="42" cy="36" r="8"/>
+                <path d="m23 68 24-22 17 15 12-11 21 18"/>
+              </svg>
+              <img id="image-preview" alt="Selected image preview" hidden>
+            </div>
+          </div>
+        </div>
+
+        <fieldset>
+          <legend>Conversion settings</legend>
+          <div class="settings-grid">
+            <div class="field">
+              <label for="width-notes">Time resolution</label>
+              <input id="width-notes" name="width_notes" type="number" inputmode="numeric" value="200" min="8" max="1000" required aria-describedby="width-hint">
+              <span class="hint" id="width-hint">Columns across the timeline (8–1000)</span>
+            </div>
+            <div class="field">
+              <label for="height-notes">Pitch resolution</label>
+              <input id="height-notes" name="height_notes" type="number" inputmode="numeric" value="88" min="8" max="400" required aria-describedby="height-hint pitch-info">
+              <span class="hint" id="height-hint">Rows mapped to MIDI pitches (8–400)</span>
+            </div>
+            <div class="field">
+              <label for="start-note">Lowest MIDI note</label>
+              <input id="start-note" name="start_note" type="number" inputmode="numeric" value="36" min="0" max="127" required aria-describedby="pitch-info">
+              <span class="hint" id="pitch-info">C2 to C8 · scaled to fit MIDI range</span>
+            </div>
+            <div class="field">
+              <label for="tempo">Tempo (BPM)</label>
+              <input id="tempo" name="tempo" type="number" inputmode="numeric" value="120" min="30" max="300" required>
+              <span class="hint">Playback tempo (30–300 BPM)</span>
+            </div>
+            <div class="field">
+              <label for="background">Image background</label>
+              <select id="background" name="background">
+                <option value="auto">Auto-detect</option>
+                <option value="light">Light background</option>
+                <option value="dark">Dark background</option>
+              </select>
+              <span class="hint">Select manually if the result looks inverted</span>
+            </div>
+            <div class="field">
+              <div class="range-label">
+                <label for="threshold">Brightness threshold</label>
+                <output id="threshold-output" for="threshold">128</output>
+              </div>
+              <input id="threshold" name="threshold" type="range" value="128" min="0" max="255" step="1" aria-describedby="threshold-hint">
+              <span class="hint" id="threshold-hint">Used for manual light or dark background mode</span>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="roll-preview" aria-labelledby="roll-title">
+          <div class="preview-header">
+            <div>
+              <strong id="roll-title">MIDI roll preview</strong>
+              <span id="roll-meta">Add an image to see detected notes</span>
+            </div>
+          </div>
+          <div class="roll-stage"><canvas id="roll-canvas" width="800" height="300" aria-label="Preview of detected MIDI notes"></canvas></div>
+        </div>
+
+        <section class="midi-player" id="midi-player" aria-labelledby="player-title" hidden>
+          <div class="player-heading">
+            <div>
+              <p class="step-label">Browser playback</p>
+              <h3 id="player-title">Listen to the generated notes</h3>
+              <p>The preview uses a lightweight built-in synth. Your DAW instrument may sound different.</p>
+            </div>
+            <span class="player-ready"><span aria-hidden="true"></span>MIDI ready</span>
+          </div>
+          <div class="player-controls">
+            <button class="player-button player-button-primary" id="player-play" type="button" aria-label="Play MIDI preview">
+              <svg class="play-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="m7 4 9 6-9 6V4Z"/></svg>
+              <svg class="pause-icon" viewBox="0 0 20 20" aria-hidden="true" hidden><path d="M6 4v12M14 4v12"/></svg>
+              <span>Play</span>
+            </button>
+            <button class="player-button" id="player-stop" type="button" aria-label="Stop MIDI preview" disabled>
+              <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="5" y="5" width="10" height="10" rx="1"/></svg>
+              <span>Stop</span>
+            </button>
+            <div class="player-timeline">
+              <input id="player-position" type="range" min="0" max="1000" value="0" step="1" aria-label="Playback position">
+              <div class="player-time"><output id="player-current-time" for="player-position">0:00</output><span>/</span><span id="player-duration">0:00</span></div>
+            </div>
+            <label class="volume-control" for="player-volume">
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8v4h3l4 3V5L6 8H3Zm10-1.5a5 5 0 0 1 0 7"/></svg>
+              <span class="sr-only">Preview volume</span>
+              <input id="player-volume" type="range" min="0" max="100" value="55" step="1">
+            </label>
+          </div>
+          <p class="player-status" id="player-status" role="status" aria-live="polite">Select Play to hear the MIDI preview.</p>
+        </section>
+
+        <div class="form-footer">
+          <div class="status-wrap">
+            <p class="status-message" id="status-message" role="status" aria-live="polite">Ready when you are.</p>
+            <p class="error-message" id="error-message" role="alert" hidden></p>
+          </div>
+          <div class="button-row">
+            <button class="button button-quiet" id="reset-button" type="reset">Reset</button>
+            <button class="button button-primary" id="convert-button" type="submit" disabled>
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v10m0 0 4-4m-4 4-4-4M4 16h12"/></svg>
+              <span>Convert and download</span>
+            </button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <section class="content-section" id="how-it-works" aria-labelledby="how-title">
+      <p class="step-label">How it works</p>
+      <h2 id="how-title">From pixels to a piano roll in three steps</h2>
+      <div class="step-grid">
+        <article><span>01</span><h3>Choose an image</h3><p>Upload, drag, or paste artwork, a logo, line drawing, photograph, or other browser-readable image.</p></article>
+        <article><span>02</span><h3>Map pixels to notes</h3><p>Horizontal position becomes time, vertical position becomes pitch, and foreground shapes become MIDI notes.</p></article>
+        <article><span>03</span><h3>Preview and export</h3><p>Listen with the built-in synth, then download a Standard MIDI File for FL Studio, Ableton Live, Logic Pro, Reaper, or MuseScore.</p></article>
+      </div>
+    </section>
+
+    <section class="explain-grid" aria-label="Image to MIDI conversion guide">
+      <article>
+        <p class="step-label">Better results</p>
+        <h2>Tips for clean MIDI art</h2>
+        <ul class="tips-list">
+          <li><strong>Use clear contrast.</strong> Dark art on a light background—or the reverse—produces the cleanest note shapes.</li>
+          <li><strong>Start with fewer columns.</strong> A width of 100–250 is easier for most DAWs to display and play.</li>
+          <li><strong>Match the background.</strong> If the preview is inverted, change Auto-detect to Light or Dark background.</li>
+          <li><strong>Control the pitch span.</strong> Tall images can use many notes; the converter safely scales them into MIDI's 0–127 range.</li>
+        </ul>
+      </article>
+      <aside class="definition-card">
+        <p class="step-label">Quick definition</p>
+        <h2>What is image-to-MIDI?</h2>
+        <p>Image-to-MIDI is a visual mapping technique, not audio transcription. It converts the geometry and brightness of an image into MIDI note events. The result can resemble the source image inside a DAW piano roll while also producing playable musical data.</p>
+      </aside>
+    </section>
+
+    <section class="content-section faq-section" id="faq" aria-labelledby="faq-title">
+      <p class="step-label">Questions</p>
+      <h2 id="faq-title">Image to MIDI FAQ</h2>
+      <div class="faq-list">
+        <details><summary>How does image-to-MIDI conversion work?</summary><p>The tool reduces the image to a grid. Each horizontal cell represents a point in time, each vertical cell represents a pitch, and detected foreground pixels become notes. Neighboring pixels are joined into longer notes to keep the MIDI file compact.</p></details>
+        <details><summary>Are my images uploaded or stored?</summary><p>No. Image decoding, pixel analysis, preview rendering, and MIDI generation all happen locally in your browser. Closing or refreshing the page clears the selected image.</p></details>
+        <details><summary>Which image formats can I convert?</summary><p>The converter accepts formats that modern browsers can decode, including PNG, JPEG/JPG, GIF, BMP, and WebP. A clear, high-contrast image usually creates the best piano-roll result.</p></details>
+        <details><summary>Can I listen to the generated MIDI online?</summary><p>Yes. Convert the image first, then use the built-in player to play, pause, stop, seek, and change volume. Playback is synthesized with the Web Audio API in your browser, so Cloudflare only needs to serve the static site files.</p></details>
+        <details><summary>Is the generated file compatible with FL Studio and Ableton?</summary><p>Yes. The download is a Standard MIDI File (.mid). You can import it into FL Studio, Ableton Live, Logic Pro, Reaper, MuseScore, and most other MIDI-compatible music software.</p></details>
+        <details><summary>Does converting an image reproduce its sound?</summary><p>No. This tool maps visual features to notes. It does not identify instruments, extract audio, or transcribe a waveform. Assign any instrument you like after importing the MIDI file into your music software.</p></details>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Free image-to-MIDI conversion, processed locally in your browser.</p>
+    <div><a href="/llms.txt">AI-readable guide</a><a href="https://github.com/hahahahahamster/image-to-MIDI" target="_blank" rel="noopener noreferrer">GitHub source</a></div>
+  </footer>
+
+  <script src="/converter-core.js" defer></script>
+  <script src="/app.js" defer></script>
+</body>
+</html>

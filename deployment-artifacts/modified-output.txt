@@ -1,0 +1,5 @@
+
+> image-to-midi-cloudflare@1.0.0 test
+> node tests/modified-test.cjs
+
+MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true background=dark midi_header=MThd midi_bytes=66 note_shapes=2 player_notes=2

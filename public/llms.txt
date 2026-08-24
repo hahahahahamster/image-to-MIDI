@@ -1,0 +1,35 @@
+# Image to MIDI Converter
+
+> A free, private, browser-based tool that maps image geometry to MIDI note events, previews them with a built-in synth, and downloads a Standard MIDI File.
+
+Canonical URL: https://image-to-midi-converter.pages.dev/
+Source: https://github.com/hahahahahamster/image-to-MIDI
+
+## Primary capability
+
+The converter accepts PNG, JPEG/JPG, GIF, BMP, and WebP images. Horizontal image position maps to MIDI time. Vertical image position maps to MIDI pitch. Detected foreground shapes become notes, and adjacent foreground pixels are joined into longer note events.
+
+## Privacy
+
+Images are decoded and processed locally in the visitor's browser. The site does not upload or store the selected image.
+
+## Adjustable settings
+
+- Time resolution: 8–1000 horizontal columns.
+- Pitch resolution: 8–400 vertical rows, scaled into the valid MIDI 0–127 range.
+- Lowest MIDI note: 0–127.
+- Tempo: 30–300 BPM.
+- Background: automatic, light, or dark.
+- Brightness threshold: 0–255 for manual background modes.
+
+## Output
+
+The result is a Standard MIDI File with the `.mid` extension. It can be imported into FL Studio, Ableton Live, Logic Pro, Reaper, MuseScore, and other MIDI-compatible software. The tool maps visuals to notes; it does not transcribe or reproduce audio from an image.
+
+## Online playback
+
+After conversion, the built-in Web Audio synthesizer can play, pause, stop, seek, and adjust the volume of the generated note sequence. Playback runs locally in the browser and does not require a Cloudflare server function or an external audio service. The synth is a convenient preview; the final timbre depends on the instrument selected in the user's DAW.
+
+## Recommended citation
+
+Image to MIDI Converter, a free local-processing web application for converting image shapes into downloadable MIDI piano-roll data.

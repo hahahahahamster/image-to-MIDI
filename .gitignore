@@ -19,6 +19,9 @@ outputs/
 .vscode/
 .DS_Store
 Thumbs.db
+.playwright-cli/
+output/
+baseline-output.txt
 
 # Local test assets (optional: remove to ignore sample images)
 # *.jpg

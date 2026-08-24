@@ -1,0 +1,12 @@
+{
+  "name": "Image to MIDI Converter",
+  "short_name": "Image to MIDI",
+  "description": "Convert image shapes into MIDI notes, preview them with a browser synth, and download the file.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#171412",
+  "theme_color": "#171412",
+  "icons": [
+    {"src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any"}
+  ]
+}

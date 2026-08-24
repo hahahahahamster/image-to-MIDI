@@ -1,0 +1,1613 @@
+diff --git a/.gitignore b/.gitignore
+index 3c9fe85..a75c60c 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -19,6 +19,9 @@ outputs/
+ .vscode/
+ .DS_Store
+ Thumbs.db
++.playwright-cli/
++output/
++baseline-output.txt
+ 
+ # Local test assets (optional: remove to ignore sample images)
+ # *.jpg
+diff --git a/README.md b/README.md
+index 1aca536..ef30f5e 100644
+--- a/README.md
++++ b/README.md
+@@ -1,6 +1,8 @@
+ # Image to MIDI Converter
+ 
+-A web application that converts images into minimalist MIDI files. Intelligently handles dark backgrounds, light backgrounds, and color images to extract clean musical notes.
++A free web application that converts image shapes into playable MIDI notes. The Cloudflare Pages version processes images entirely in the browser, previews the generated sequence with a built-in Web Audio synth, and downloads a Standard MIDI File.
++
++**Live site:** https://image-to-midi-converter.pages.dev/
+ 
+ ## Features
+ 
+@@ -8,8 +10,39 @@ A web application that converts images into minimalist MIDI files. Intelligently
+ - 🎵 **Customizable Parameters**: Adjust width, height, start note, and threshold
+ - 🌐 **Web Interface**: Beautiful, modern UI for easy image upload and conversion
+ - 📥 **Instant Download**: Generated MIDI files download automatically
++- ▶ **Online MIDI Preview**: Play, pause, stop, seek, and change preview volume after conversion
++- 🔒 **Private Browser Processing**: The Cloudflare version does not upload or store images
++- 🔎 **SEO/GEO Ready**: Canonical metadata, structured data, sitemap, robots.txt, and llms.txt
++
++## Cloudflare Pages version
++
++The production site is a static HTML/CSS/JavaScript app in [`public/`](./public). Image decoding, note extraction, MIDI generation, and audio preview all use browser APIs, so the feature works on Cloudflare Pages without a Python runtime, server function, database, or paid service.
++
++### Local development
++
++```bash
++npm test
++npm run preview
++```
++
++### Deploy
++
++```bash
++npx wrangler whoami
++npx wrangler pages deploy public --project-name=image-to-midi-converter --branch=main
++```
++
++Cloudflare assigns the free domain `https://image-to-midi-converter.pages.dev/`.
++
++### Browser playback
++
++After **Convert and download** finishes, the MIDI player appears below the piano-roll preview. It uses the Web Audio API and a lightweight triangle-wave synth. The downloaded MIDI contains note timing and pitch data only; the final sound depends on the instrument selected in a DAW.
++
++## Legacy Flask version
++
++The original Python/Flask implementation remains available in `app.py`.
+ 
+-## Installation
++### Flask installation
+ 
+ 1. Install Python 3.8 or higher
+ 
+@@ -18,7 +51,7 @@ A web application that converts images into minimalist MIDI files. Intelligently
+ pip install -r requirements.txt
+ ```
+ 
+-## Usage
++### Flask usage
+ 
+ 1. Start the web server:
+ ```bash
+diff --git a/package.json b/package.json
+new file mode 100644
+index 0000000..607be8c
+--- /dev/null
++++ b/package.json
+@@ -0,0 +1,10 @@
++{
++  "name": "image-to-midi-cloudflare",
++  "private": true,
++  "version": "1.0.0",
++  "description": "Static, privacy-first image to MIDI converter for Cloudflare Pages",
++  "scripts": {
++    "test": "node tests/modified-test.cjs",
++    "preview": "npx wrangler pages dev public"
++  }
++}
+diff --git a/public/404.html b/public/404.html
+new file mode 100644
+index 0000000..fd9e57e
+--- /dev/null
++++ b/public/404.html
+@@ -0,0 +1 @@
++<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Page not found · Image to MIDI</title><link rel="stylesheet" href="/styles.css"><link rel="icon" href="/favicon.svg"></head><body><main class="hero"><p class="eyebrow">404</p><h1>That page is <span>off beat</span></h1><p class="hero-copy">Return to the converter and turn an image into MIDI notes.</p><p><a class="button button-primary" href="/">Open the converter</a></p></main></body></html>
+diff --git a/public/_headers b/public/_headers
+new file mode 100644
+index 0000000..54b7636
+--- /dev/null
++++ b/public/_headers
+@@ -0,0 +1,22 @@
++/*
++  X-Content-Type-Options: nosniff
++  X-Frame-Options: DENY
++  Referrer-Policy: strict-origin-when-cross-origin
++  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
++  Content-Security-Policy: default-src 'self'; img-src 'self' blob: data:; script-src 'self' 'unsafe-inline'; style-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
++  X-Robots-Tag: all
++
++/*.js
++  Cache-Control: public, max-age=604800
++
++/*.css
++  Cache-Control: public, max-age=604800
++
++/*.png
++  Cache-Control: public, max-age=2592000
++
++/favicon.svg
++  Cache-Control: public, max-age=2592000
++
++/index.html
++  Cache-Control: public, max-age=0, must-revalidate
+diff --git a/public/app.js b/public/app.js
+new file mode 100644
+index 0000000..37e68c2
+--- /dev/null
++++ b/public/app.js
+@@ -0,0 +1,532 @@
++(function () {
++  "use strict";
++
++  const core = window.ImageToMidiCore;
++  const form = document.getElementById("convert-form");
++  const fileInput = document.getElementById("image-input");
++  const dropZone = document.getElementById("drop-zone");
++  const dropTitle = document.getElementById("drop-title");
++  const dropCopy = document.getElementById("drop-copy");
++  const preview = document.getElementById("image-preview");
++  const placeholder = document.getElementById("preview-placeholder");
++  const clearButton = document.getElementById("clear-button");
++  const demoButton = document.getElementById("demo-button");
++  const resetButton = document.getElementById("reset-button");
++  const convertButton = document.getElementById("convert-button");
++  const statusMessage = document.getElementById("status-message");
++  const errorMessage = document.getElementById("error-message");
++  const threshold = document.getElementById("threshold");
++  const thresholdOutput = document.getElementById("threshold-output");
++  const background = document.getElementById("background");
++  const widthNotes = document.getElementById("width-notes");
++  const heightNotes = document.getElementById("height-notes");
++  const startNote = document.getElementById("start-note");
++  const tempo = document.getElementById("tempo");
++  const pitchInfo = document.getElementById("pitch-info");
++  const rollCanvas = document.getElementById("roll-canvas");
++  const rollMeta = document.getElementById("roll-meta");
++  const rollContext = rollCanvas.getContext("2d");
++  const midiPlayer = document.getElementById("midi-player");
++  const playerPlay = document.getElementById("player-play");
++  const playerStop = document.getElementById("player-stop");
++  const playerPosition = document.getElementById("player-position");
++  const playerCurrentTime = document.getElementById("player-current-time");
++  const playerDuration = document.getElementById("player-duration");
++  const playerVolume = document.getElementById("player-volume");
++  const playerStatus = document.getElementById("player-status");
++  let currentFile = null;
++  let currentImage = null;
++  let currentObjectUrl = null;
++  let previewTimer = null;
++  let lastConversion = null;
++  let audioContext = null;
++  let masterGain = null;
++  let playerData = null;
++  let playerTimer = null;
++  let playerStartedAt = 0;
++  let playerOffset = 0;
++  let nextNoteIndex = 0;
++  let isPlaying = false;
++  const activeVoices = new Set();
++
++  function showError(message) {
++    errorMessage.textContent = message;
++    errorMessage.hidden = false;
++    statusMessage.textContent = "Conversion stopped.";
++  }
++
++  function clearError() {
++    errorMessage.textContent = "";
++    errorMessage.hidden = true;
++  }
++
++  function updatePitchInfo() {
++    const start = core.clamp(Number(startNote.value) || 0, 0, 127);
++    const rows = core.clamp(Number(heightNotes.value) || 8, 8, 400);
++    const end = Math.min(127, start + rows - 1);
++    const scaled = start + rows - 1 > 127 ? " · scaled to fit MIDI range" : "";
++    pitchInfo.textContent = `${core.getNoteName(start)} to ${core.getNoteName(end)}${scaled}`;
++  }
++
++  function drawEmptyRoll() {
++    const width = rollCanvas.width;
++    const height = rollCanvas.height;
++    rollContext.fillStyle = "#131110";
++    rollContext.fillRect(0, 0, width, height);
++    rollContext.strokeStyle = "rgba(255,255,255,.055)";
++    rollContext.lineWidth = 1;
++    for (let x = 0; x <= width; x += 40) {
++      rollContext.beginPath(); rollContext.moveTo(x, 0); rollContext.lineTo(x, height); rollContext.stroke();
++    }
++    for (let y = 0; y <= height; y += 20) {
++      rollContext.beginPath(); rollContext.moveTo(0, y); rollContext.lineTo(width, y); rollContext.stroke();
++    }
++    rollContext.fillStyle = "#8f837a";
++    rollContext.textAlign = "center";
++    rollContext.font = "600 14px system-ui";
++    rollContext.fillText("Detected notes will appear here", width / 2, height / 2);
++  }
++
++  function drawRoll(mask, width, height) {
++    const displayWidth = 1000;
++    const displayHeight = 360;
++    const dpr = Math.min(window.devicePixelRatio || 1, 2);
++    rollCanvas.width = displayWidth * dpr;
++    rollCanvas.height = displayHeight * dpr;
++    rollContext.setTransform(dpr, 0, 0, dpr, 0, 0);
++    rollContext.fillStyle = "#131110";
++    rollContext.fillRect(0, 0, displayWidth, displayHeight);
++    const cellWidth = displayWidth / width;
++    const cellHeight = displayHeight / height;
++    rollContext.strokeStyle = "rgba(255,255,255,.05)";
++    rollContext.lineWidth = 1;
++    for (let x = 0; x <= displayWidth; x += Math.max(32, cellWidth * 16)) {
++      rollContext.beginPath(); rollContext.moveTo(x, 0); rollContext.lineTo(x, displayHeight); rollContext.stroke();
++    }
++    for (let y = 0; y <= displayHeight; y += Math.max(24, cellHeight * 12)) {
++      rollContext.beginPath(); rollContext.moveTo(0, y); rollContext.lineTo(displayWidth, y); rollContext.stroke();
++    }
++    const gradient = rollContext.createLinearGradient(0, 0, displayWidth, displayHeight);
++    gradient.addColorStop(0, "#ff7a1a");
++    gradient.addColorStop(1, "#4f7cff");
++    rollContext.fillStyle = gradient;
++    for (let y = 0; y < height; y += 1) {
++      let x = 0;
++      while (x < width) {
++        if (!mask[y * width + x]) { x += 1; continue; }
++        const start = x;
++        while (x < width && mask[y * width + x]) x += 1;
++        const rectX = start * cellWidth;
++        const rectWidth = Math.max(1, (x - start) * cellWidth - .35);
++        const rectY = y * cellHeight;
++        rollContext.fillRect(rectX, rectY, rectWidth, Math.max(1, cellHeight - .35));
++      }
++    }
++  }
++
++  function formatTime(seconds) {
++    const safe = Math.max(0, Number.isFinite(seconds) ? seconds : 0);
++    const minutes = Math.floor(safe / 60);
++    const remainder = Math.floor(safe % 60).toString().padStart(2, "0");
++    return `${minutes}:${remainder}`;
++  }
++
++  function setPlayerButtonState() {
++    const playIcon = playerPlay.querySelector(".play-icon");
++    const pauseIcon = playerPlay.querySelector(".pause-icon");
++    const label = playerPlay.querySelector("span");
++    playIcon.hidden = isPlaying;
++    pauseIcon.hidden = !isPlaying;
++    label.textContent = isPlaying ? "Pause" : (playerData && playerOffset >= playerData.durationSeconds ? "Replay" : "Play");
++    playerPlay.setAttribute("aria-label", isPlaying ? "Pause MIDI preview" : "Play MIDI preview");
++    playerPlay.disabled = !playerData || !playerData.notes.length;
++    playerStop.disabled = !playerData || (!isPlaying && playerOffset <= 0);
++  }
++
++  function updatePlayerPosition(seconds = playerOffset) {
++    const duration = playerData?.durationSeconds || 0;
++    const safe = core.clamp(seconds, 0, duration);
++    playerOffset = safe;
++    playerPosition.value = duration ? String(Math.round((safe / duration) * 1000)) : "0";
++    playerCurrentTime.textContent = formatTime(safe);
++    playerDuration.textContent = formatTime(duration);
++    setPlayerButtonState();
++  }
++
++  function stopActiveVoices() {
++    for (const voice of activeVoices) {
++      try { voice.stop(); } catch (_) { /* already stopped */ }
++    }
++    activeVoices.clear();
++  }
++
++  function stopPlayback(reset = true, message = "Playback stopped.") {
++    clearTimeout(playerTimer);
++    playerTimer = null;
++    if (isPlaying && audioContext) playerOffset = core.clamp(audioContext.currentTime - playerStartedAt, 0, playerData?.durationSeconds || 0);
++    isPlaying = false;
++    stopActiveVoices();
++    if (reset) playerOffset = 0;
++    updatePlayerPosition(playerOffset);
++    if (playerData) playerStatus.textContent = message;
++  }
++
++  function pausePlayback() {
++    if (!isPlaying || !audioContext) return;
++    playerOffset = core.clamp(audioContext.currentTime - playerStartedAt, 0, playerData.durationSeconds);
++    isPlaying = false;
++    clearTimeout(playerTimer);
++    playerTimer = null;
++    stopActiveVoices();
++    updatePlayerPosition(playerOffset);
++    playerStatus.textContent = `Paused at ${formatTime(playerOffset)}.`;
++  }
++
++  function ensureAudioContext() {
++    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
++    if (!AudioContextClass) throw new Error("Web Audio playback is not available in this browser.");
++    if (!audioContext) {
++      audioContext = new AudioContextClass();
++      masterGain = audioContext.createGain();
++      masterGain.gain.value = Number(playerVolume.value) / 100;
++      masterGain.connect(audioContext.destination);
++    }
++    return audioContext;
++  }
++
++  function scheduleVoice(note, positionSeconds) {
++    if (!audioContext || !playerData || activeVoices.size >= 96) return;
++    const secondsPerBeat = 60 / playerData.tempo;
++    const noteStart = note.startBeat * secondsPerBeat;
++    const noteEnd = (note.startBeat + note.durationBeats) * secondsPerBeat;
++    if (noteEnd <= positionSeconds) return;
++    const startAt = audioContext.currentTime + Math.max(.012, noteStart - positionSeconds);
++    const endAt = audioContext.currentTime + Math.max(.04, noteEnd - positionSeconds);
++    if (endAt <= startAt) return;
++
++    const oscillator = audioContext.createOscillator();
++    const envelope = audioContext.createGain();
++    oscillator.type = "triangle";
++    oscillator.frequency.setValueAtTime(440 * 2 ** ((note.pitch - 69) / 12), startAt);
++    envelope.gain.setValueAtTime(.0001, startAt);
++    envelope.gain.exponentialRampToValueAtTime(.018, Math.min(startAt + .018, endAt - .01));
++    envelope.gain.setValueAtTime(.012, Math.max(startAt + .02, endAt - .035));
++    envelope.gain.exponentialRampToValueAtTime(.0001, endAt);
++    oscillator.connect(envelope);
++    envelope.connect(masterGain);
++    oscillator.onended = () => {
++      activeVoices.delete(oscillator);
++      oscillator.disconnect();
++      envelope.disconnect();
++    };
++    activeVoices.add(oscillator);
++    oscillator.start(startAt);
++    oscillator.stop(endAt + .01);
++  }
++
++  function playerTick() {
++    if (!isPlaying || !audioContext || !playerData) return;
++    const position = audioContext.currentTime - playerStartedAt;
++    const lookAhead = position + .35;
++    const secondsPerBeat = 60 / playerData.tempo;
++    while (nextNoteIndex < playerData.notes.length) {
++      const note = playerData.notes[nextNoteIndex];
++      const startSeconds = note.startBeat * secondsPerBeat;
++      if (startSeconds > lookAhead) break;
++      scheduleVoice(note, position);
++      nextNoteIndex += 1;
++    }
++    updatePlayerPosition(position);
++    if (position >= playerData.durationSeconds) {
++      isPlaying = false;
++      stopActiveVoices();
++      playerOffset = playerData.durationSeconds;
++      updatePlayerPosition(playerOffset);
++      playerStatus.textContent = "Playback finished. Select Replay to listen again.";
++      return;
++    }
++    playerTimer = setTimeout(playerTick, 80);
++  }
++
++  async function startPlayback() {
++    if (!playerData?.notes.length) return;
++    try {
++      const context = ensureAudioContext();
++      await context.resume();
++      if (playerOffset >= playerData.durationSeconds) playerOffset = 0;
++      stopActiveVoices();
++      const secondsPerBeat = 60 / playerData.tempo;
++      nextNoteIndex = 0;
++      while (nextNoteIndex < playerData.notes.length) {
++        const note = playerData.notes[nextNoteIndex];
++        const noteEnd = (note.startBeat + note.durationBeats) * secondsPerBeat;
++        if (noteEnd > playerOffset) break;
++        nextNoteIndex += 1;
++      }
++      playerStartedAt = context.currentTime - playerOffset;
++      isPlaying = true;
++      setPlayerButtonState();
++      playerStatus.textContent = `Playing ${playerData.notes.length.toLocaleString()} note shapes with the browser synth.`;
++      playerTick();
++    } catch (error) {
++      playerStatus.textContent = error.message || "Playback could not start.";
++    }
++  }
++
++  function preparePlayer(conversion) {
++    stopPlayback(true);
++    const secondsPerBeat = 60 / conversion.settings.tempo;
++    playerData = {
++      notes: conversion.midi.notes,
++      tempo: conversion.settings.tempo,
++      durationSeconds: conversion.midi.durationBeats * secondsPerBeat
++    };
++    midiPlayer.hidden = false;
++    playerStatus.textContent = playerData.notes.length
++      ? `MIDI ready: ${playerData.notes.length.toLocaleString()} note shapes. Select Play to preview.`
++      : "The generated MIDI contains no notes. Adjust the image or threshold and convert again.";
++    updatePlayerPosition(0);
++  }
++
++  function invalidatePlayer() {
++    if (playerData || !midiPlayer.hidden) stopPlayback(true);
++    playerData = null;
++    midiPlayer.hidden = true;
++    updatePlayerPosition(0);
++  }
++
++  function imageToGrays(image, width, height) {
++    const canvas = document.createElement("canvas");
++    canvas.width = width;
++    canvas.height = height;
++    const context = canvas.getContext("2d", { willReadFrequently: true });
++    context.fillStyle = "#ffffff";
++    context.fillRect(0, 0, width, height);
++    context.imageSmoothingEnabled = true;
++    context.imageSmoothingQuality = "high";
++    context.drawImage(image, 0, 0, width, height);
++    const rgba = context.getImageData(0, 0, width, height).data;
++    const grays = new Uint8Array(width * height);
++    for (let i = 0, pixel = 0; i < rgba.length; i += 4, pixel += 1) {
++      const alpha = rgba[i + 3] / 255;
++      const luminance = .2126 * rgba[i] + .7152 * rgba[i + 1] + .0722 * rgba[i + 2];
++      grays[pixel] = Math.round(luminance * alpha + 255 * (1 - alpha));
++    }
++    return grays;
++  }
++
++  function validateSettings() {
++    const values = {
++      width: Number(widthNotes.value),
++      height: Number(heightNotes.value),
++      start: Number(startNote.value),
++      tempo: Number(tempo.value),
++      threshold: Number(threshold.value),
++      background: background.value
++    };
++    if (!Number.isInteger(values.width) || values.width < 8 || values.width > 1000) throw new Error("Time resolution must be an integer from 8 to 1000.");
++    if (!Number.isInteger(values.height) || values.height < 8 || values.height > 400) throw new Error("Pitch resolution must be an integer from 8 to 400.");
++    if (!Number.isInteger(values.start) || values.start < 0 || values.start > 127) throw new Error("Lowest MIDI note must be an integer from 0 to 127.");
++    if (!Number.isInteger(values.tempo) || values.tempo < 30 || values.tempo > 300) throw new Error("Tempo must be an integer from 30 to 300 BPM.");
++    return values;
++  }
++
++  function processCurrentImage() {
++    if (!currentImage) return null;
++    const settings = validateSettings();
++    const grays = imageToGrays(currentImage, settings.width, settings.height);
++    const detection = core.createMask(grays, settings.width, settings.height, settings);
++    const midi = core.buildMidi(detection.mask, settings.width, settings.height, { startNote: settings.start, tempo: settings.tempo });
++    drawRoll(detection.mask, settings.width, settings.height);
++    rollMeta.textContent = `${midi.noteCount.toLocaleString()} note shapes · ${detection.background} background · threshold ${detection.threshold}`;
++    return { settings, detection, midi };
++  }
++
++  function schedulePreview() {
++    clearTimeout(previewTimer);
++    if (!currentImage) return;
++    previewTimer = setTimeout(() => {
++      try {
++        clearError();
++        lastConversion = processCurrentImage();
++        statusMessage.textContent = "Preview updated. Ready to download.";
++      } catch (error) {
++        showError(error.message);
++      }
++    }, 180);
++  }
++
++  function releaseImage() {
++    invalidatePlayer();
++    currentFile = null;
++    currentImage = null;
++    lastConversion = null;
++    fileInput.value = "";
++    if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
++    currentObjectUrl = null;
++    preview.removeAttribute("src");
++    preview.hidden = true;
++    placeholder.hidden = false;
++    clearButton.hidden = true;
++    convertButton.disabled = true;
++    dropTitle.textContent = "Drop an image here";
++    dropCopy.textContent = "or choose a file from your device";
++    rollMeta.textContent = "Add an image to see detected notes";
++    drawEmptyRoll();
++  }
++
++  function loadFile(file) {
++    clearError();
++    invalidatePlayer();
++    if (!file || !file.type.startsWith("image/")) {
++      showError("Choose a PNG, JPG, GIF, BMP, or WebP image.");
++      return;
++    }
++    if (file.size > 16 * 1024 * 1024) {
++      showError("The image is larger than 16 MB. Choose a smaller file.");
++      return;
++    }
++    if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
++    currentObjectUrl = URL.createObjectURL(file);
++    const image = new Image();
++    image.onload = () => {
++      currentFile = file;
++      currentImage = image;
++      preview.src = currentObjectUrl;
++      preview.hidden = false;
++      placeholder.hidden = true;
++      clearButton.hidden = false;
++      convertButton.disabled = false;
++      dropTitle.textContent = file.name || "Pasted image";
++      dropCopy.textContent = `${image.naturalWidth} × ${image.naturalHeight} px · ${(file.size / 1024).toFixed(1)} KB`;
++      statusMessage.textContent = "Image loaded. Building MIDI preview…";
++      schedulePreview();
++    };
++    image.onerror = () => showError("This image could not be decoded by your browser.");
++    image.src = currentObjectUrl;
++  }
++
++  function makeDemoFile() {
++    const canvas = document.createElement("canvas");
++    canvas.width = 720;
++    canvas.height = 420;
++    const context = canvas.getContext("2d");
++    context.fillStyle = "#fffaf5";
++    context.fillRect(0, 0, canvas.width, canvas.height);
++    context.strokeStyle = "#171412";
++    context.lineWidth = 30;
++    context.lineCap = "round";
++    context.lineJoin = "round";
++    context.beginPath();
++    context.moveTo(110, 190);
++    context.bezierCurveTo(110, 80, 270, 80, 360, 205);
++    context.bezierCurveTo(450, 80, 610, 80, 610, 190);
++    context.bezierCurveTo(610, 285, 500, 335, 360, 365);
++    context.bezierCurveTo(220, 335, 110, 285, 110, 190);
++    context.stroke();
++    canvas.toBlob((blob) => {
++      if (blob) loadFile(new File([blob], "demo-heart.png", { type: "image/png" }));
++    }, "image/png");
++  }
++
++  function safeFilename() {
++    const base = (currentFile?.name || "image").replace(/\.[^.]+$/, "").replace(/[^a-z0-9_-]+/gi, "-").replace(/^-+|-+$/g, "") || "image";
++    return `${base}-to-midi.mid`;
++  }
++
++  fileInput.addEventListener("change", () => loadFile(fileInput.files[0]));
++  ["dragenter", "dragover"].forEach((eventName) => dropZone.addEventListener(eventName, (event) => {
++    event.preventDefault();
++    dropZone.classList.add("dragging");
++  }));
++  ["dragleave", "drop"].forEach((eventName) => dropZone.addEventListener(eventName, (event) => {
++    event.preventDefault();
++    dropZone.classList.remove("dragging");
++  }));
++  dropZone.addEventListener("drop", (event) => loadFile(event.dataTransfer.files[0]));
++  document.addEventListener("paste", (event) => {
++    const item = Array.from(event.clipboardData?.items || []).find((entry) => entry.type.startsWith("image/"));
++    if (item) {
++      event.preventDefault();
++      loadFile(item.getAsFile());
++    }
++  });
++  clearButton.addEventListener("click", () => {
++    releaseImage();
++    statusMessage.textContent = "Image removed.";
++  });
++  demoButton.addEventListener("click", makeDemoFile);
++  threshold.addEventListener("input", () => { thresholdOutput.textContent = threshold.value; invalidatePlayer(); schedulePreview(); });
++  [background, widthNotes, heightNotes, startNote, tempo].forEach((control) => control.addEventListener("input", () => {
++    updatePitchInfo();
++    invalidatePlayer();
++    schedulePreview();
++  }));
++  playerPlay.addEventListener("click", () => { if (isPlaying) pausePlayback(); else startPlayback(); });
++  playerStop.addEventListener("click", () => stopPlayback(true));
++  playerPosition.addEventListener("input", () => {
++    const duration = playerData?.durationSeconds || 0;
++    const previewPosition = duration * Number(playerPosition.value) / 1000;
++    playerCurrentTime.textContent = formatTime(previewPosition);
++  });
++  playerPosition.addEventListener("change", () => {
++    if (!playerData) return;
++    const wasPlaying = isPlaying;
++    if (isPlaying) pausePlayback();
++    playerOffset = playerData.durationSeconds * Number(playerPosition.value) / 1000;
++    updatePlayerPosition(playerOffset);
++    playerStatus.textContent = `Moved to ${formatTime(playerOffset)}.`;
++    if (wasPlaying) startPlayback();
++  });
++  playerVolume.addEventListener("input", () => {
++    if (masterGain && audioContext) masterGain.gain.setTargetAtTime(Number(playerVolume.value) / 100, audioContext.currentTime, .015);
++  });
++  form.addEventListener("submit", async (event) => {
++    event.preventDefault();
++    clearError();
++    if (!currentImage) {
++      showError("Add an image before converting.");
++      return;
++    }
++    convertButton.disabled = true;
++    convertButton.querySelector("span").textContent = "Converting…";
++    statusMessage.textContent = "Generating your MIDI file locally…";
++    await new Promise((resolve) => setTimeout(resolve, 20));
++    try {
++      lastConversion = processCurrentImage();
++      const blob = new Blob([lastConversion.midi.bytes], { type: "audio/midi" });
++      const url = URL.createObjectURL(blob);
++      const anchor = document.createElement("a");
++      anchor.href = url;
++      anchor.download = safeFilename();
++      document.body.appendChild(anchor);
++      anchor.click();
++      anchor.remove();
++      setTimeout(() => URL.revokeObjectURL(url), 1500);
++      statusMessage.textContent = `Downloaded ${anchor.download} with ${lastConversion.midi.noteCount.toLocaleString()} note shapes.`;
++      preparePlayer(lastConversion);
++    } catch (error) {
++      showError(error.message || "The MIDI file could not be generated.");
++    } finally {
++      convertButton.disabled = !currentImage;
++      convertButton.querySelector("span").textContent = "Convert and download";
++    }
++  });
++  form.addEventListener("reset", () => {
++    setTimeout(() => {
++      thresholdOutput.textContent = threshold.value;
++      updatePitchInfo();
++      releaseImage();
++      clearError();
++      statusMessage.textContent = "Settings reset.";
++    });
++  });
++  resetButton.addEventListener("click", () => clearError());
++  window.addEventListener("resize", () => { if (lastConversion) drawRoll(lastConversion.detection.mask, lastConversion.settings.width, lastConversion.settings.height); });
++  document.addEventListener("visibilitychange", () => { if (document.hidden && isPlaying) pausePlayback(); });
++  window.addEventListener("pagehide", () => stopPlayback(true));
++
++  thresholdOutput.textContent = threshold.value;
++  updatePitchInfo();
++  drawEmptyRoll();
++})();
+diff --git a/public/converter-core.js b/public/converter-core.js
+new file mode 100644
+index 0000000..2fbfb1c
+--- /dev/null
++++ b/public/converter-core.js
+@@ -0,0 +1,253 @@
++(function (root, factory) {
++  const api = factory();
++  if (typeof module === "object" && module.exports) module.exports = api;
++  root.ImageToMidiCore = api;
++})(typeof globalThis !== "undefined" ? globalThis : this, function () {
++  "use strict";
++
++  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
++
++  function detectBackground(grays, width, height) {
++    const values = Array.from(grays).sort((a, b) => a - b);
++    const median = values[Math.floor(values.length / 2)] || 0;
++    let bright = 0;
++    let dark = 0;
++    let edgeTotal = 0;
++    let edgeCount = 0;
++
++    for (let i = 0; i < grays.length; i += 1) {
++      const value = grays[i];
++      if (value >= 180) bright += 1;
++      if (value <= 80) dark += 1;
++      const x = i % width;
++      const y = Math.floor(i / width);
++      if (x === 0 || y === 0 || x === width - 1 || y === height - 1) {
++        edgeTotal += value;
++        edgeCount += 1;
++      }
++    }
++
++    const brightRatio = bright / grays.length;
++    const darkRatio = dark / grays.length;
++    const edgeMean = edgeCount ? edgeTotal / edgeCount : median;
++    if ((edgeMean >= 180 && brightRatio >= 0.35) || edgeMean >= 205 || (brightRatio >= 0.5 && median >= 180)) return "light";
++    if ((edgeMean <= 80 && darkRatio >= 0.35) || edgeMean <= 55 || (darkRatio >= 0.5 && median <= 80)) return "dark";
++    if (darkRatio > brightRatio + 0.1) return "dark";
++    if (brightRatio > darkRatio + 0.1) return "light";
++    return median >= 128 ? "light" : "dark";
++  }
++
++  function otsuThreshold(grays) {
++    const histogram = new Uint32Array(256);
++    for (const value of grays) histogram[value] += 1;
++    const total = grays.length;
++    let sum = 0;
++    for (let i = 0; i < 256; i += 1) sum += i * histogram[i];
++    let backgroundWeight = 0;
++    let backgroundSum = 0;
++    let bestVariance = -1;
++    let threshold = 128;
++    for (let i = 0; i < 256; i += 1) {
++      backgroundWeight += histogram[i];
++      if (!backgroundWeight) continue;
++      const foregroundWeight = total - backgroundWeight;
++      if (!foregroundWeight) break;
++      backgroundSum += i * histogram[i];
++      const backgroundMean = backgroundSum / backgroundWeight;
++      const foregroundMean = (sum - backgroundSum) / foregroundWeight;
++      const variance = backgroundWeight * foregroundWeight * (backgroundMean - foregroundMean) ** 2;
++      if (variance > bestVariance) {
++        bestVariance = variance;
++        threshold = i;
++      }
++    }
++    return threshold;
++  }
++
++  function dilate(mask, width, height) {
++    const output = new Uint8Array(mask.length);
++    for (let y = 0; y < height; y += 1) {
++      for (let x = 0; x < width; x += 1) {
++        let active = 0;
++        for (let oy = -1; oy <= 1 && !active; oy += 1) {
++          for (let ox = -1; ox <= 1; ox += 1) {
++            const nx = x + ox;
++            const ny = y + oy;
++            if (nx >= 0 && nx < width && ny >= 0 && ny < height && mask[ny * width + nx]) {
++              active = 1;
++              break;
++            }
++          }
++        }
++        output[y * width + x] = active;
++      }
++    }
++    return output;
++  }
++
++  function erode(mask, width, height) {
++    const output = new Uint8Array(mask.length);
++    for (let y = 0; y < height; y += 1) {
++      for (let x = 0; x < width; x += 1) {
++        let active = 1;
++        for (let oy = -1; oy <= 1 && active; oy += 1) {
++          for (let ox = -1; ox <= 1; ox += 1) {
++            const nx = x + ox;
++            const ny = y + oy;
++            if (nx < 0 || nx >= width || ny < 0 || ny >= height || !mask[ny * width + nx]) {
++              active = 0;
++              break;
++            }
++          }
++        }
++        output[y * width + x] = active;
++      }
++    }
++    return output;
++  }
++
++  function removeSmallComponents(mask, width, height) {
++    if (mask.length > 450000) return mask;
++    const output = new Uint8Array(mask.length);
++    const visited = new Uint8Array(mask.length);
++    const minArea = Math.max(2, Math.min(32, Math.floor(mask.length * 0.0004)));
++    const stack = [];
++    for (let start = 0; start < mask.length; start += 1) {
++      if (!mask[start] || visited[start]) continue;
++      const component = [];
++      stack.push(start);
++      visited[start] = 1;
++      while (stack.length) {
++        const current = stack.pop();
++        component.push(current);
++        const x = current % width;
++        const y = Math.floor(current / width);
++        const neighbors = [
++          x > 0 ? current - 1 : -1,
++          x < width - 1 ? current + 1 : -1,
++          y > 0 ? current - width : -1,
++          y < height - 1 ? current + width : -1
++        ];
++        for (const next of neighbors) {
++          if (next >= 0 && mask[next] && !visited[next]) {
++            visited[next] = 1;
++            stack.push(next);
++          }
++        }
++      }
++      if (component.length >= minArea) {
++        for (const index of component) output[index] = 1;
++      }
++    }
++    return output;
++  }
++
++  function createMask(grays, width, height, options = {}) {
++    const requestedBackground = options.background || "auto";
++    const background = requestedBackground === "auto" ? detectBackground(grays, width, height) : requestedBackground;
++    const threshold = requestedBackground === "auto" ? otsuThreshold(grays) : clamp(Number(options.threshold ?? 128), 0, 255);
++    let mask = new Uint8Array(grays.length);
++    let active = 0;
++    for (let i = 0; i < grays.length; i += 1) {
++      const note = background === "light" ? grays[i] <= threshold : grays[i] >= threshold;
++      mask[i] = note ? 1 : 0;
++      active += mask[i];
++    }
++
++    if (mask.length <= 220000) mask = erode(dilate(mask, width, height), width, height);
++    mask = removeSmallComponents(mask, width, height);
++    active = mask.reduce((sum, value) => sum + value, 0);
++    if (active / mask.length > 0.58) {
++      for (let i = 0; i < mask.length; i += 1) mask[i] = mask[i] ? 0 : 1;
++      active = mask.length - active;
++    }
++    return { mask, background, threshold, active };
++  }
++
++  function variableLength(value) {
++    let buffer = value & 0x7f;
++    const bytes = [];
++    while ((value >>= 7)) {
++      buffer <<= 8;
++      buffer |= (value & 0x7f) | 0x80;
++    }
++    while (true) {
++      bytes.push(buffer & 0xff);
++      if (buffer & 0x80) buffer >>= 8;
++      else break;
++    }
++    return bytes;
++  }
++
++  function uint32(value) {
++    return [(value >>> 24) & 255, (value >>> 16) & 255, (value >>> 8) & 255, value & 255];
++  }
++
++  function uint16(value) {
++    return [(value >>> 8) & 255, value & 255];
++  }
++
++  function buildMidi(mask, width, height, options = {}) {
++    const startNote = clamp(Number(options.startNote ?? 36), 0, 127);
++    const tempo = clamp(Number(options.tempo ?? 120), 30, 300);
++    const ppq = 96;
++    const stepTicks = 24;
++    const pitchRows = new Map();
++    const notes = [];
++
++    for (let y = 0; y < height; y += 1) {
++      const relative = height > 1 ? (height - y - 1) / (height - 1) : 0;
++      const available = 127 - startNote;
++      const pitch = clamp(Math.round(startNote + relative * Math.min(height - 1, available)), 0, 127);
++      if (!pitchRows.has(pitch)) pitchRows.set(pitch, new Uint8Array(width));
++      const row = pitchRows.get(pitch);
++      for (let x = 0; x < width; x += 1) {
++        if (mask[y * width + x]) row[x] = 1;
++      }
++    }
++
++    const events = [];
++    let noteCount = 0;
++    for (const [pitch, row] of pitchRows) {
++      let x = 0;
++      while (x < width) {
++        if (!row[x]) { x += 1; continue; }
++        const start = x;
++        while (x < width && row[x]) x += 1;
++        const end = x;
++        events.push({ tick: start * stepTicks, order: 1, bytes: [0x90, pitch, 100] });
++        events.push({ tick: end * stepTicks, order: 0, bytes: [0x80, pitch, 0] });
++        notes.push({ pitch, startBeat: start / 4, durationBeats: (end - start) / 4 });
++        noteCount += 1;
++      }
++    }
++    events.sort((a, b) => a.tick - b.tick || a.order - b.order || a.bytes[1] - b.bytes[1]);
++    notes.sort((a, b) => a.startBeat - b.startBeat || a.pitch - b.pitch);
++
++    const track = [];
++    const name = Array.from(new TextEncoder().encode("Image to MIDI"));
++    track.push(0x00, 0xff, 0x03, name.length, ...name);
++    const micros = Math.round(60000000 / tempo);
++    track.push(0x00, 0xff, 0x51, 0x03, (micros >>> 16) & 255, (micros >>> 8) & 255, micros & 255);
++    let previousTick = 0;
++    for (const event of events) {
++      track.push(...variableLength(event.tick - previousTick), ...event.bytes);
++      previousTick = event.tick;
++    }
++    track.push(0x00, 0xff, 0x2f, 0x00);
++
++    const bytes = [
++      0x4d, 0x54, 0x68, 0x64, ...uint32(6), ...uint16(0), ...uint16(1), ...uint16(ppq),
++      0x4d, 0x54, 0x72, 0x6b, ...uint32(track.length), ...track
++    ];
++    return { bytes: new Uint8Array(bytes), noteCount, durationBeats: width / 4, notes };
++  }
++
++  function getNoteName(note) {
++    const names = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
++    const safe = clamp(Number(note), 0, 127);
++    return `${names[safe % 12]}${Math.floor(safe / 12) - 1}`;
++  }
++
++  return { clamp, detectBackground, otsuThreshold, createMask, buildMidi, getNoteName };
++});
+diff --git a/public/favicon.svg b/public/favicon.svg
+new file mode 100644
+index 0000000..87aad16
+--- /dev/null
++++ b/public/favicon.svg
+@@ -0,0 +1,5 @@
++<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
++  <rect width="64" height="64" rx="16" fill="#ff7a1a"/>
++  <path d="M18 45V22l29-5v22" fill="none" stroke="#171412" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
++  <circle cx="22" cy="45" r="7" fill="#171412"/><circle cx="47" cy="39" r="7" fill="#171412"/>
++</svg>
+diff --git a/public/index.html b/public/index.html
+new file mode 100644
+index 0000000..794f703
+--- /dev/null
++++ b/public/index.html
+@@ -0,0 +1,309 @@
++<!doctype html>
++<html lang="en">
++<head>
++  <meta charset="utf-8">
++  <meta name="viewport" content="width=device-width, initial-scale=1">
++  <title>Image to MIDI Converter – Free Online PNG/JPG to MIDI</title>
++  <meta name="description" content="Convert PNG, JPG, GIF, BMP, and WebP images into MIDI files for free, preview the notes online, and download the result. Private browser processing.">
++  <meta name="keywords" content="image to MIDI, image MIDI converter, picture to MIDI, PNG to MIDI, JPG to MIDI, MIDI art, piano roll art">
++  <meta name="author" content="Image to MIDI Converter">
++  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
++  <meta name="theme-color" content="#171412">
++  <link rel="canonical" href="https://image-to-midi-converter.pages.dev/">
++  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
++  <link rel="manifest" href="/site.webmanifest">
++  <meta property="og:type" content="website">
++  <meta property="og:site_name" content="Image to MIDI Converter">
++  <meta property="og:title" content="Free Image to MIDI Converter">
++  <meta property="og:description" content="Turn an image into a MIDI piano-roll pattern, preview it with a built-in synth, and download the .mid file. No image upload required.">
++  <meta property="og:url" content="https://image-to-midi-converter.pages.dev/">
++  <meta property="og:image" content="https://image-to-midi-converter.pages.dev/og-image.png">
++  <meta property="og:image:width" content="1200">
++  <meta property="og:image:height" content="630">
++  <meta property="og:image:alt" content="Image to MIDI Converter interface with a colorful piano roll">
++  <meta name="twitter:card" content="summary_large_image">
++  <meta name="twitter:title" content="Free Image to MIDI Converter">
++  <meta name="twitter:description" content="Convert PNG and JPG images to MIDI locally in your browser.">
++  <meta name="twitter:image" content="https://image-to-midi-converter.pages.dev/og-image.png">
++  <link rel="stylesheet" href="/styles.css">
++  <script type="application/ld+json">
++  {
++    "@context": "https://schema.org",
++    "@graph": [
++      {
++        "@type": "WebApplication",
++        "@id": "https://image-to-midi-converter.pages.dev/#app",
++        "name": "Image to MIDI Converter",
++        "url": "https://image-to-midi-converter.pages.dev/",
++        "description": "A free browser-based tool that maps image pixels to musical notes, previews them with a built-in synthesizer, and exports a Standard MIDI File.",
++        "applicationCategory": "MultimediaApplication",
++        "operatingSystem": "Any modern web browser",
++        "browserRequirements": "Requires JavaScript and Canvas support",
++        "isAccessibleForFree": true,
++        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
++        "featureList": [
++          "PNG, JPG, GIF, BMP, and WebP image input",
++          "Automatic light or dark background detection",
++          "Adjustable note width, pitch range, threshold, and tempo",
++          "Local browser processing with no image upload",
++          "Built-in Web Audio synthesizer preview",
++          "Standard MIDI File download"
++        ]
++      },
++      {
++        "@type": "HowTo",
++        "@id": "https://image-to-midi-converter.pages.dev/#howto",
++        "name": "How to convert an image to MIDI",
++        "totalTime": "PT1M",
++        "step": [
++          {"@type": "HowToStep", "position": 1, "name": "Choose an image", "text": "Upload, drag, or paste a PNG, JPG, GIF, BMP, or WebP image."},
++          {"@type": "HowToStep", "position": 2, "name": "Adjust conversion settings", "text": "Choose the time resolution, pitch range, starting MIDI note, threshold, background mode, and tempo."},
++          {"@type": "HowToStep", "position": 3, "name": "Download the MIDI file", "text": "Select Convert and download, then import the generated .mid file into a DAW or notation app."}
++        ]
++      },
++      {
++        "@type": "FAQPage",
++        "@id": "https://image-to-midi-converter.pages.dev/#faq",
++        "mainEntity": [
++          {"@type": "Question", "name": "How does image-to-MIDI conversion work?", "acceptedAnswer": {"@type": "Answer", "text": "The image is reduced to a note grid. Horizontal position becomes time, vertical position becomes pitch, and detected foreground shapes become MIDI notes."}},
++          {"@type": "Question", "name": "Are uploaded images stored?", "acceptedAnswer": {"@type": "Answer", "text": "No. The converter processes the image locally in your browser and does not send it to a server."}},
++          {"@type": "Question", "name": "Which image formats are supported?", "acceptedAnswer": {"@type": "Answer", "text": "Common browser-readable formats are supported, including PNG, JPEG, GIF, BMP, and WebP."}},
++          {"@type": "Question", "name": "Can I listen to the MIDI before opening a DAW?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. After conversion, the built-in browser synthesizer can play, pause, stop, seek, and adjust the volume of the generated note sequence."}},
++          {"@type": "Question", "name": "Where can I use the downloaded MIDI file?", "acceptedAnswer": {"@type": "Answer", "text": "You can import it into DAWs and notation tools that accept Standard MIDI Files, including FL Studio, Ableton Live, Logic Pro, Reaper, and MuseScore."}}
++        ]
++      }
++    ]
++  }
++  </script>
++</head>
++<body>
++  <a class="skip-link" href="#converter">Skip to converter</a>
++  <header class="site-header">
++    <a class="brand" href="/" aria-label="Image to MIDI Converter home">
++      <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
++        <rect x="2" y="2" width="36" height="36" rx="10" fill="currentColor" opacity=".14"/>
++        <path d="M11 27V14l17-3v13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
++        <circle cx="14" cy="27" r="4" fill="currentColor"/><circle cx="28" cy="24" r="4" fill="currentColor"/>
++      </svg>
++      <span>Image to MIDI</span>
++    </a>
++    <nav aria-label="Primary navigation">
++      <a href="#how-it-works">How it works</a>
++      <a href="#faq">FAQ</a>
++      <a class="source-link" href="https://github.com/hahahahahamster/image-to-MIDI" target="_blank" rel="noopener noreferrer">Source code<span class="sr-only"> (opens in a new tab)</span></a>
++    </nav>
++  </header>
++
++  <main>
++    <section class="hero" aria-labelledby="page-title">
++      <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span> Free · private · browser-based</p>
++      <h1 id="page-title">Turn any image into <span>MIDI notes</span></h1>
++      <p class="hero-copy">Map shapes, drawings, logos, and photos onto a playable piano roll. Your image stays on your device—the entire conversion runs locally in your browser.</p>
++      <ul class="benefit-list" aria-label="Key benefits">
++        <li><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 10 3 3 7-7"/></svg>No account or upload</li>
++        <li><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 10 3 3 7-7"/></svg>Works with PNG, JPG & WebP</li>
++        <li><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 10 3 3 7-7"/></svg>Built-in synth preview</li>
++        <li><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 10 3 3 7-7"/></svg>DAW-ready .mid download</li>
++      </ul>
++    </section>
++
++    <section class="converter-shell" id="converter" aria-labelledby="converter-title">
++      <div class="section-heading">
++        <div>
++          <p class="step-label">Image converter</p>
++          <h2 id="converter-title">Create your MIDI file</h2>
++        </div>
++        <span class="privacy-badge">
++          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2 4 5v4c0 4 2.5 7.2 6 9 3.5-1.8 6-5 6-9V5l-6-3Z"/><path d="m7.5 10 1.6 1.6 3.5-3.7"/></svg>
++          Local processing
++        </span>
++      </div>
++
++      <form id="convert-form" novalidate>
++        <div class="upload-grid">
++          <div>
++            <label class="drop-zone" id="drop-zone" for="image-input">
++              <input id="image-input" name="image" type="file" accept="image/png,image/jpeg,image/gif,image/bmp,image/webp" hidden>
++              <span class="upload-icon" aria-hidden="true">
++                <svg viewBox="0 0 24 24"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/></svg>
++              </span>
++              <strong id="drop-title">Drop an image here</strong>
++              <span id="drop-copy">or choose a file from your device</span>
++              <span class="file-types">PNG, JPG, GIF, BMP, WebP · up to 16 MB</span>
++            </label>
++            <div class="upload-actions">
++              <button class="button button-quiet" id="demo-button" type="button">Use demo pattern</button>
++              <span>Paste an image with <kbd>Ctrl</kbd> + <kbd>V</kbd></span>
++            </div>
++          </div>
++
++          <div class="preview-card" id="preview-card">
++            <div class="preview-header">
++              <span>Input preview</span>
++              <button class="icon-button" id="clear-button" type="button" aria-label="Remove selected image" hidden>
++                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 6 8 8m0-8-8 8"/></svg>
++              </button>
++            </div>
++            <div class="preview-stage">
++              <svg id="preview-placeholder" viewBox="0 0 120 90" aria-hidden="true">
++                <rect x="14" y="12" width="92" height="66" rx="8"/>
++                <circle cx="42" cy="36" r="8"/>
++                <path d="m23 68 24-22 17 15 12-11 21 18"/>
++              </svg>
++              <img id="image-preview" alt="Selected image preview" hidden>
++            </div>
++          </div>
++        </div>
++
++        <fieldset>
++          <legend>Conversion settings</legend>
++          <div class="settings-grid">
++            <div class="field">
++              <label for="width-notes">Time resolution</label>
++              <input id="width-notes" name="width_notes" type="number" inputmode="numeric" value="200" min="8" max="1000" required aria-describedby="width-hint">
++              <span class="hint" id="width-hint">Columns across the timeline (8–1000)</span>
++            </div>
++            <div class="field">
++              <label for="height-notes">Pitch resolution</label>
++              <input id="height-notes" name="height_notes" type="number" inputmode="numeric" value="88" min="8" max="400" required aria-describedby="height-hint pitch-info">
++              <span class="hint" id="height-hint">Rows mapped to MIDI pitches (8–400)</span>
++            </div>
++            <div class="field">
++              <label for="start-note">Lowest MIDI note</label>
++              <input id="start-note" name="start_note" type="number" inputmode="numeric" value="36" min="0" max="127" required aria-describedby="pitch-info">
++              <span class="hint" id="pitch-info">C2 to C8 · scaled to fit MIDI range</span>
++            </div>
++            <div class="field">
++              <label for="tempo">Tempo (BPM)</label>
++              <input id="tempo" name="tempo" type="number" inputmode="numeric" value="120" min="30" max="300" required>
++              <span class="hint">Playback tempo (30–300 BPM)</span>
++            </div>
++            <div class="field">
++              <label for="background">Image background</label>
++              <select id="background" name="background">
++                <option value="auto">Auto-detect</option>
++                <option value="light">Light background</option>
++                <option value="dark">Dark background</option>
++              </select>
++              <span class="hint">Select manually if the result looks inverted</span>
++            </div>
++            <div class="field">
++              <div class="range-label">
++                <label for="threshold">Brightness threshold</label>
++                <output id="threshold-output" for="threshold">128</output>
++              </div>
++              <input id="threshold" name="threshold" type="range" value="128" min="0" max="255" step="1" aria-describedby="threshold-hint">
++              <span class="hint" id="threshold-hint">Used for manual light or dark background mode</span>
++            </div>
++          </div>
++        </fieldset>
++
++        <div class="roll-preview" aria-labelledby="roll-title">
++          <div class="preview-header">
++            <div>
++              <strong id="roll-title">MIDI roll preview</strong>
++              <span id="roll-meta">Add an image to see detected notes</span>
++            </div>
++          </div>
++          <div class="roll-stage"><canvas id="roll-canvas" width="800" height="300" aria-label="Preview of detected MIDI notes"></canvas></div>
++        </div>
++
++        <section class="midi-player" id="midi-player" aria-labelledby="player-title" hidden>
++          <div class="player-heading">
++            <div>
++              <p class="step-label">Browser playback</p>
++              <h3 id="player-title">Listen to the generated notes</h3>
++              <p>The preview uses a lightweight built-in synth. Your DAW instrument may sound different.</p>
++            </div>
++            <span class="player-ready"><span aria-hidden="true"></span>MIDI ready</span>
++          </div>
++          <div class="player-controls">
++            <button class="player-button player-button-primary" id="player-play" type="button" aria-label="Play MIDI preview">
++              <svg class="play-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="m7 4 9 6-9 6V4Z"/></svg>
++              <svg class="pause-icon" viewBox="0 0 20 20" aria-hidden="true" hidden><path d="M6 4v12M14 4v12"/></svg>
++              <span>Play</span>
++            </button>
++            <button class="player-button" id="player-stop" type="button" aria-label="Stop MIDI preview" disabled>
++              <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="5" y="5" width="10" height="10" rx="1"/></svg>
++              <span>Stop</span>
++            </button>
++            <div class="player-timeline">
++              <input id="player-position" type="range" min="0" max="1000" value="0" step="1" aria-label="Playback position">
++              <div class="player-time"><output id="player-current-time" for="player-position">0:00</output><span>/</span><span id="player-duration">0:00</span></div>
++            </div>
++            <label class="volume-control" for="player-volume">
++              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8v4h3l4 3V5L6 8H3Zm10-1.5a5 5 0 0 1 0 7"/></svg>
++              <span class="sr-only">Preview volume</span>
++              <input id="player-volume" type="range" min="0" max="100" value="55" step="1">
++            </label>
++          </div>
++          <p class="player-status" id="player-status" role="status" aria-live="polite">Select Play to hear the MIDI preview.</p>
++        </section>
++
++        <div class="form-footer">
++          <div class="status-wrap">
++            <p class="status-message" id="status-message" role="status" aria-live="polite">Ready when you are.</p>
++            <p class="error-message" id="error-message" role="alert" hidden></p>
++          </div>
++          <div class="button-row">
++            <button class="button button-quiet" id="reset-button" type="reset">Reset</button>
++            <button class="button button-primary" id="convert-button" type="submit" disabled>
++              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v10m0 0 4-4m-4 4-4-4M4 16h12"/></svg>
++              <span>Convert and download</span>
++            </button>
++          </div>
++        </div>
++      </form>
++    </section>
++
++    <section class="content-section" id="how-it-works" aria-labelledby="how-title">
++      <p class="step-label">How it works</p>
++      <h2 id="how-title">From pixels to a piano roll in three steps</h2>
++      <div class="step-grid">
++        <article><span>01</span><h3>Choose an image</h3><p>Upload, drag, or paste artwork, a logo, line drawing, photograph, or other browser-readable image.</p></article>
++        <article><span>02</span><h3>Map pixels to notes</h3><p>Horizontal position becomes time, vertical position becomes pitch, and foreground shapes become MIDI notes.</p></article>
++        <article><span>03</span><h3>Preview and export</h3><p>Listen with the built-in synth, then download a Standard MIDI File for FL Studio, Ableton Live, Logic Pro, Reaper, or MuseScore.</p></article>
++      </div>
++    </section>
++
++    <section class="explain-grid" aria-label="Image to MIDI conversion guide">
++      <article>
++        <p class="step-label">Better results</p>
++        <h2>Tips for clean MIDI art</h2>
++        <ul class="tips-list">
++          <li><strong>Use clear contrast.</strong> Dark art on a light background—or the reverse—produces the cleanest note shapes.</li>
++          <li><strong>Start with fewer columns.</strong> A width of 100–250 is easier for most DAWs to display and play.</li>
++          <li><strong>Match the background.</strong> If the preview is inverted, change Auto-detect to Light or Dark background.</li>
++          <li><strong>Control the pitch span.</strong> Tall images can use many notes; the converter safely scales them into MIDI's 0–127 range.</li>
++        </ul>
++      </article>
++      <aside class="definition-card">
++        <p class="step-label">Quick definition</p>
++        <h2>What is image-to-MIDI?</h2>
++        <p>Image-to-MIDI is a visual mapping technique, not audio transcription. It converts the geometry and brightness of an image into MIDI note events. The result can resemble the source image inside a DAW piano roll while also producing playable musical data.</p>
++      </aside>
++    </section>
++
++    <section class="content-section faq-section" id="faq" aria-labelledby="faq-title">
++      <p class="step-label">Questions</p>
++      <h2 id="faq-title">Image to MIDI FAQ</h2>
++      <div class="faq-list">
++        <details><summary>How does image-to-MIDI conversion work?</summary><p>The tool reduces the image to a grid. Each horizontal cell represents a point in time, each vertical cell represents a pitch, and detected foreground pixels become notes. Neighboring pixels are joined into longer notes to keep the MIDI file compact.</p></details>
++        <details><summary>Are my images uploaded or stored?</summary><p>No. Image decoding, pixel analysis, preview rendering, and MIDI generation all happen locally in your browser. Closing or refreshing the page clears the selected image.</p></details>
++        <details><summary>Which image formats can I convert?</summary><p>The converter accepts formats that modern browsers can decode, including PNG, JPEG/JPG, GIF, BMP, and WebP. A clear, high-contrast image usually creates the best piano-roll result.</p></details>
++        <details><summary>Can I listen to the generated MIDI online?</summary><p>Yes. Convert the image first, then use the built-in player to play, pause, stop, seek, and change volume. Playback is synthesized with the Web Audio API in your browser, so Cloudflare only needs to serve the static site files.</p></details>
++        <details><summary>Is the generated file compatible with FL Studio and Ableton?</summary><p>Yes. The download is a Standard MIDI File (.mid). You can import it into FL Studio, Ableton Live, Logic Pro, Reaper, MuseScore, and most other MIDI-compatible music software.</p></details>
++        <details><summary>Does converting an image reproduce its sound?</summary><p>No. This tool maps visual features to notes. It does not identify instruments, extract audio, or transcribe a waveform. Assign any instrument you like after importing the MIDI file into your music software.</p></details>
++      </div>
++    </section>
++  </main>
++
++  <footer>
++    <p>Free image-to-MIDI conversion, processed locally in your browser.</p>
++    <div><a href="/llms.txt">AI-readable guide</a><a href="https://github.com/hahahahahamster/image-to-MIDI" target="_blank" rel="noopener noreferrer">GitHub source</a></div>
++  </footer>
++
++  <script src="/converter-core.js" defer></script>
++  <script src="/app.js" defer></script>
++</body>
++</html>
+diff --git a/public/llms.txt b/public/llms.txt
+new file mode 100644
+index 0000000..7d54826
+--- /dev/null
++++ b/public/llms.txt
+@@ -0,0 +1,35 @@
++# Image to MIDI Converter
++
++> A free, private, browser-based tool that maps image geometry to MIDI note events, previews them with a built-in synth, and downloads a Standard MIDI File.
++
++Canonical URL: https://image-to-midi-converter.pages.dev/
++Source: https://github.com/hahahahahamster/image-to-MIDI
++
++## Primary capability
++
++The converter accepts PNG, JPEG/JPG, GIF, BMP, and WebP images. Horizontal image position maps to MIDI time. Vertical image position maps to MIDI pitch. Detected foreground shapes become notes, and adjacent foreground pixels are joined into longer note events.
++
++## Privacy
++
++Images are decoded and processed locally in the visitor's browser. The site does not upload or store the selected image.
++
++## Adjustable settings
++
++- Time resolution: 8–1000 horizontal columns.
++- Pitch resolution: 8–400 vertical rows, scaled into the valid MIDI 0–127 range.
++- Lowest MIDI note: 0–127.
++- Tempo: 30–300 BPM.
++- Background: automatic, light, or dark.
++- Brightness threshold: 0–255 for manual background modes.
++
++## Output
++
++The result is a Standard MIDI File with the `.mid` extension. It can be imported into FL Studio, Ableton Live, Logic Pro, Reaper, MuseScore, and other MIDI-compatible software. The tool maps visuals to notes; it does not transcribe or reproduce audio from an image.
++
++## Online playback
++
++After conversion, the built-in Web Audio synthesizer can play, pause, stop, seek, and adjust the volume of the generated note sequence. Playback runs locally in the browser and does not require a Cloudflare server function or an external audio service. The synth is a convenient preview; the final timbre depends on the instrument selected in the user's DAW.
++
++## Recommended citation
++
++Image to MIDI Converter, a free local-processing web application for converting image shapes into downloadable MIDI piano-roll data.
+diff --git a/public/og-image.png b/public/og-image.png
+new file mode 100644
+index 0000000..46526db
+Binary files /dev/null and b/public/og-image.png differ
+diff --git a/public/robots.txt b/public/robots.txt
+new file mode 100644
+index 0000000..a3f132f
+--- /dev/null
++++ b/public/robots.txt
+@@ -0,0 +1,4 @@
++User-agent: *
++Allow: /
++
++Sitemap: https://image-to-midi-converter.pages.dev/sitemap.xml
+diff --git a/public/site.webmanifest b/public/site.webmanifest
+new file mode 100644
+index 0000000..04f9768
+--- /dev/null
++++ b/public/site.webmanifest
+@@ -0,0 +1,12 @@
++{
++  "name": "Image to MIDI Converter",
++  "short_name": "Image to MIDI",
++  "description": "Convert image shapes into MIDI notes, preview them with a browser synth, and download the file.",
++  "start_url": "/",
++  "display": "standalone",
++  "background_color": "#171412",
++  "theme_color": "#171412",
++  "icons": [
++    {"src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any"}
++  ]
++}
+diff --git a/public/sitemap.xml b/public/sitemap.xml
+new file mode 100644
+index 0000000..24f00ed
+--- /dev/null
++++ b/public/sitemap.xml
+@@ -0,0 +1,9 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
++  <url>
++    <loc>https://image-to-midi-converter.pages.dev/</loc>
++    <lastmod>2026-08-24</lastmod>
++    <changefreq>monthly</changefreq>
++    <priority>1.0</priority>
++  </url>
++</urlset>
+diff --git a/public/styles.css b/public/styles.css
+new file mode 100644
+index 0000000..ba5aca2
+--- /dev/null
++++ b/public/styles.css
+@@ -0,0 +1,207 @@
++:root {
++  color-scheme: dark;
++  --bg: #171412;
++  --bg-soft: #211d1a;
++  --card: #28231f;
++  --card-strong: #312a25;
++  --text: #fffaf5;
++  --muted: #c8bdb5;
++  --subtle: #9f938a;
++  --line: rgba(255, 244, 235, .13);
++  --primary: #ff7a1a;
++  --primary-light: #ffad70;
++  --accent: #4f7cff;
++  --success: #54d49b;
++  --danger: #ff7b7b;
++  --focus: #8bb1ff;
++  --shadow: 0 24px 70px rgba(0, 0, 0, .34);
++  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
++}
++
++* { box-sizing: border-box; }
++[hidden] { display: none !important; }
++html { scroll-behavior: smooth; }
++body { margin: 0; min-width: 320px; background: radial-gradient(circle at 50% -10%, rgba(255, 122, 26, .16), transparent 34rem), var(--bg); color: var(--text); line-height: 1.6; }
++body::before { content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .2; background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px); background-size: 32px 32px; mask-image: linear-gradient(to bottom, black, transparent 70%); }
++a { color: inherit; }
++button, input, select { font: inherit; }
++button, label[for], select, summary { cursor: pointer; touch-action: manipulation; }
++button { color: inherit; }
++svg { display: block; }
++
++.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
++.skip-link { position: fixed; z-index: 100; left: 1rem; top: 1rem; transform: translateY(-180%); padding: .75rem 1rem; border-radius: .6rem; color: #111; background: #fff; font-weight: 700; }
++.skip-link:focus { transform: translateY(0); }
++
++.site-header { width: min(1160px, calc(100% - 2rem)); min-height: 72px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; border-bottom: 1px solid var(--line); }
++.brand { display: inline-flex; align-items: center; gap: .7rem; text-decoration: none; font-weight: 800; letter-spacing: -.02em; }
++.brand-mark { width: 38px; color: var(--primary); }
++nav { display: flex; align-items: center; gap: clamp(.85rem, 2vw, 1.8rem); }
++nav a { color: var(--muted); font-size: .92rem; text-decoration: none; }
++nav a:hover { color: var(--text); }
++.source-link { padding: .55rem .85rem; border: 1px solid var(--line); border-radius: .65rem; }
++
++main { position: relative; z-index: 1; }
++.hero { width: min(900px, calc(100% - 2rem)); margin: 0 auto; padding: clamp(4.5rem, 10vw, 8.5rem) 0 clamp(3rem, 7vw, 5rem); text-align: center; }
++.eyebrow, .step-label { margin: 0 0 1rem; color: var(--primary-light); font-size: .78rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
++.eyebrow { display: inline-flex; align-items: center; gap: .55rem; padding: .45rem .8rem; border: 1px solid rgba(255, 122, 26, .3); border-radius: 999px; background: rgba(255, 122, 26, .08); }
++.status-dot { width: .48rem; height: .48rem; border-radius: 50%; background: var(--success); box-shadow: 0 0 0 .24rem rgba(84, 212, 155, .12); }
++h1, h2, h3, p { overflow-wrap: anywhere; }
++h1 { max-width: 850px; margin: 1.15rem auto 1.4rem; font-size: clamp(2.75rem, 8vw, 6.2rem); line-height: .98; letter-spacing: -.065em; }
++h1 span { color: var(--primary); }
++.hero-copy { max-width: 700px; margin: 0 auto; color: var(--muted); font-size: clamp(1.05rem, 2vw, 1.25rem); }
++.benefit-list { display: flex; flex-wrap: wrap; justify-content: center; gap: .8rem 1.5rem; margin: 2rem 0 0; padding: 0; list-style: none; color: #e4dcd6; font-size: .92rem; }
++.benefit-list li { display: inline-flex; align-items: center; gap: .45rem; }
++.benefit-list svg { width: 18px; fill: none; stroke: var(--success); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
++
++.converter-shell { width: min(1120px, calc(100% - 2rem)); margin: 0 auto; padding: clamp(1.25rem, 4vw, 2.25rem); border: 1px solid var(--line); border-radius: 1.5rem; background: linear-gradient(145deg, rgba(49, 42, 37, .96), rgba(34, 29, 26, .98)); box-shadow: var(--shadow); }
++.section-heading, .form-footer, .preview-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
++.section-heading { margin-bottom: 1.75rem; }
++.section-heading h2, .content-section h2, .explain-grid h2 { margin: 0; font-size: clamp(1.65rem, 4vw, 2.55rem); line-height: 1.16; letter-spacing: -.035em; }
++.section-heading .step-label { margin-bottom: .25rem; }
++.privacy-badge { display: inline-flex; align-items: center; gap: .45rem; flex: 0 0 auto; padding: .55rem .75rem; border: 1px solid rgba(84, 212, 155, .28); border-radius: 999px; color: #b9f6d9; background: rgba(84, 212, 155, .08); font-size: .8rem; font-weight: 700; }
++.privacy-badge svg { width: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
++
++.upload-grid { display: grid; grid-template-columns: 1.25fr .75fr; gap: 1.1rem; }
++.drop-zone { min-height: 240px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; border: 1.5px dashed rgba(255, 173, 112, .45); border-radius: 1rem; background: rgba(17, 15, 13, .3); text-align: center; transition: border-color .2s ease, background .2s ease, box-shadow .2s ease; }
++.drop-zone:hover, .drop-zone.dragging { border-color: var(--primary); background: rgba(255, 122, 26, .07); }
++.drop-zone:focus-within { outline: 3px solid var(--focus); outline-offset: 3px; }
++.upload-icon { width: 54px; height: 54px; display: grid; place-items: center; margin-bottom: .9rem; border-radius: 1rem; color: var(--primary-light); background: rgba(255, 122, 26, .12); }
++.upload-icon svg { width: 28px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
++.drop-zone strong { font-size: 1.05rem; }
++.drop-zone > span:not(.upload-icon) { color: var(--muted); font-size: .9rem; }
++.drop-zone .file-types { margin-top: .7rem; color: var(--subtle) !important; font-size: .76rem !important; }
++.upload-actions { min-height: 48px; display: flex; align-items: center; justify-content: space-between; gap: .8rem; padding-top: .55rem; color: var(--subtle); font-size: .76rem; }
++kbd { display: inline-block; padding: .05rem .32rem; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: .3rem; color: var(--muted); background: #171412; font: inherit; }
++
++.preview-card { min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 1rem; background: rgba(17, 15, 13, .33); }
++.preview-header { min-height: 48px; padding: .7rem .85rem; border-bottom: 1px solid var(--line); color: var(--muted); font-size: .82rem; }
++.preview-header > div { min-width: 0; display: flex; align-items: baseline; gap: .75rem; }
++.preview-header strong { color: var(--text); font-size: .9rem; }
++.preview-header span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
++.preview-stage { height: 240px; display: grid; place-items: center; padding: .8rem; }
++.preview-stage > svg { width: min(140px, 55%); fill: none; stroke: #74685f; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
++.preview-stage img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: .5rem; }
++.icon-button { width: 44px; height: 44px; display: grid; place-items: center; flex: 0 0 auto; padding: 0; border: 0; border-radius: .65rem; color: var(--muted); background: transparent; }
++.icon-button:hover { color: var(--text); background: rgba(255,255,255,.07); }
++.icon-button svg { width: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
++
++fieldset { margin: 1.7rem 0 0; padding: 0; border: 0; }
++legend { margin-bottom: 1rem; padding: 0; color: var(--text); font-weight: 800; }
++.settings-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
++.field { min-width: 0; }
++.field label { display: block; margin-bottom: .4rem; color: #eee6df; font-size: .84rem; font-weight: 700; }
++.field input[type="number"], .field select { width: 100%; min-height: 48px; padding: .7rem .8rem; border: 1px solid var(--line); border-radius: .7rem; color: var(--text); background: #1b1816; }
++.field select { appearance: auto; }
++.field input:hover, .field select:hover { border-color: rgba(255, 173, 112, .4); }
++.field input:focus-visible, .field select:focus-visible, button:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
++.hint { display: block; margin-top: .35rem; color: var(--subtle); font-size: .72rem; line-height: 1.4; }
++.range-label { display: flex; justify-content: space-between; gap: .8rem; }
++.range-label output { color: var(--primary-light); font-size: .82rem; font-weight: 800; }
++input[type="range"] { width: 100%; min-height: 48px; accent-color: var(--primary); }
++
++.roll-preview { margin-top: 1.5rem; overflow: hidden; border: 1px solid var(--line); border-radius: 1rem; background: #131110; }
++.roll-stage { min-height: 260px; overflow: auto; }
++.roll-stage canvas { display: block; width: 100%; height: 300px; }
++
++.midi-player { margin-top: 1.15rem; padding: 1.15rem; border: 1px solid rgba(79, 124, 255, .3); border-radius: 1rem; background: linear-gradient(145deg, rgba(79, 124, 255, .1), rgba(17, 15, 13, .55)); }
++.player-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
++.player-heading .step-label { margin-bottom: .25rem; color: #9bb4ff; }
++.player-heading h3 { margin: 0; font-size: 1.12rem; }
++.player-heading p:last-child { margin: .25rem 0 0; color: var(--subtle); font-size: .78rem; }
++.player-ready { display: inline-flex; align-items: center; gap: .45rem; flex: 0 0 auto; padding: .4rem .65rem; border: 1px solid rgba(84, 212, 155, .25); border-radius: 999px; color: #b9f6d9; background: rgba(84, 212, 155, .07); font-size: .72rem; font-weight: 800; }
++.player-ready > span { width: .5rem; height: .5rem; border-radius: 50%; background: var(--success); box-shadow: 0 0 0 .2rem rgba(84, 212, 155, .1); }
++.player-controls { display: grid; grid-template-columns: auto auto minmax(160px, 1fr) minmax(100px, 150px); align-items: center; gap: .7rem; margin-top: 1rem; }
++.player-button { min-width: 48px; min-height: 48px; display: inline-flex; align-items: center; justify-content: center; gap: .45rem; padding: .65rem .8rem; border: 1px solid var(--line); border-radius: .72rem; color: var(--muted); background: rgba(255,255,255,.035); font-weight: 800; }
++.player-button:hover:not(:disabled) { color: var(--text); border-color: rgba(255,255,255,.25); background: rgba(255,255,255,.07); }
++.player-button:active:not(:disabled), .button:active:not(:disabled) { filter: brightness(.92); }
++.player-button:disabled { cursor: not-allowed; opacity: .4; }
++.player-button-primary { min-width: 92px; border-color: rgba(79, 124, 255, .55); color: #fff; background: #345fd9; }
++.player-button-primary:hover:not(:disabled) { border-color: #7e9cff; background: #416de8; }
++.player-button svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
++.player-button .play-icon { fill: currentColor; stroke: none; }
++.player-timeline { min-width: 0; }
++.player-timeline input, .volume-control input { width: 100%; min-height: 40px; accent-color: var(--accent); }
++.player-time { display: flex; justify-content: flex-end; gap: .3rem; margin-top: -.3rem; color: var(--subtle); font-size: .7rem; font-variant-numeric: tabular-nums; }
++.volume-control { min-height: 48px; display: flex; align-items: center; gap: .45rem; padding: 0 .65rem; border: 1px solid var(--line); border-radius: .72rem; background: rgba(255,255,255,.025); }
++.volume-control svg { width: 20px; flex: 0 0 auto; fill: none; stroke: var(--muted); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
++.player-status { margin: .65rem 0 0; color: var(--subtle); font-size: .74rem; }
++
++.form-footer { margin-top: 1.5rem; }
++.status-wrap { min-width: 0; }
++.status-message, .error-message { margin: 0; color: var(--muted); font-size: .86rem; }
++.error-message { color: var(--danger); }
++.button-row { display: flex; gap: .7rem; flex: 0 0 auto; }
++.button { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; gap: .5rem; padding: .72rem 1rem; border: 1px solid transparent; border-radius: .75rem; font-weight: 800; transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, opacity .18s ease; }
++.button svg { width: 19px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
++.button-primary { min-width: 218px; color: #160d06; background: var(--primary); box-shadow: 0 10px 25px rgba(255, 122, 26, .18); }
++.button-primary:hover:not(:disabled) { background: #ff9147; box-shadow: 0 12px 30px rgba(255, 122, 26, .28); }
++.button-primary:disabled { cursor: not-allowed; opacity: .45; box-shadow: none; }
++.button-quiet { border-color: var(--line); color: var(--muted); background: rgba(255,255,255,.025); }
++.button-quiet:hover { color: var(--text); border-color: rgba(255,255,255,.25); background: rgba(255,255,255,.06); }
++.upload-actions .button { min-height: 38px; padding: .45rem .7rem; font-size: .75rem; }
++
++.content-section, .explain-grid { width: min(1120px, calc(100% - 2rem)); margin: 0 auto; padding: clamp(5rem, 10vw, 8rem) 0 0; }
++.content-section > h2 { max-width: 700px; }
++.step-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 2.2rem; }
++.step-grid article, .definition-card { padding: 1.4rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--bg-soft); }
++.step-grid article > span { color: var(--primary); font-size: .8rem; font-weight: 900; letter-spacing: .12em; }
++.step-grid h3 { margin: .7rem 0 .4rem; font-size: 1.15rem; }
++.step-grid p, .definition-card p, .tips-list { margin: 0; color: var(--muted); font-size: .92rem; }
++.explain-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 1rem; }
++.tips-list { display: grid; gap: .9rem; margin: 1.3rem 0 0; padding-left: 1.2rem; }
++.tips-list strong { color: var(--text); }
++.definition-card { padding: clamp(1.4rem, 4vw, 2.1rem); background: linear-gradient(145deg, rgba(79, 124, 255, .11), var(--bg-soft)); }
++.definition-card p:last-child { margin-top: 1rem; }
++.faq-section { padding-bottom: clamp(5rem, 10vw, 8rem); }
++.faq-list { margin-top: 2rem; border-top: 1px solid var(--line); }
++.faq-list details { border-bottom: 1px solid var(--line); }
++.faq-list summary { position: relative; padding: 1.15rem 3rem 1.15rem 0; color: #f4ede7; font-weight: 750; list-style: none; }
++.faq-list summary::-webkit-details-marker { display: none; }
++.faq-list summary::after { content: "+"; position: absolute; right: .5rem; top: .92rem; color: var(--primary-light); font-size: 1.35rem; }
++.faq-list details[open] summary::after { content: "−"; }
++.faq-list p { max-width: 820px; margin: -.35rem 0 1.2rem; color: var(--muted); }
++
++footer { width: min(1160px, calc(100% - 2rem)); margin: 0 auto; min-height: 110px; display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-top: 1px solid var(--line); color: var(--subtle); font-size: .82rem; }
++footer p { margin: 0; }
++footer div { display: flex; gap: 1.2rem; }
++footer a:hover { color: var(--text); }
++
++@media (max-width: 820px) {
++  .site-header nav a:not(.source-link) { display: none; }
++  .upload-grid, .explain-grid { grid-template-columns: 1fr; }
++  .settings-grid { grid-template-columns: repeat(2, 1fr); }
++  .step-grid { grid-template-columns: 1fr; }
++  .player-controls { grid-template-columns: auto auto minmax(140px, 1fr); }
++  .volume-control { grid-column: 1 / -1; }
++}
++
++@media (max-width: 560px) {
++  .site-header { min-height: 64px; }
++  .brand span { font-size: .92rem; }
++  .source-link { padding: .48rem .62rem; font-size: .78rem; }
++  .hero { padding-top: 3.8rem; }
++  h1 { font-size: clamp(2.6rem, 15vw, 4rem); }
++  .benefit-list { align-items: flex-start; flex-direction: column; width: max-content; max-width: 100%; margin-inline: auto; }
++  .converter-shell { width: min(100% - 1rem, 1120px); padding: 1rem; border-radius: 1.1rem; }
++  .section-heading, .form-footer, footer { align-items: stretch; flex-direction: column; }
++  .privacy-badge { align-self: flex-start; }
++  .settings-grid { grid-template-columns: 1fr; }
++  .button-row { width: 100%; }
++  .button-row .button { flex: 1; }
++  .button-primary { min-width: 0; }
++  .upload-actions { align-items: flex-start; flex-direction: column; }
++  .preview-header > div { align-items: flex-start; flex-direction: column; gap: .1rem; }
++  .player-heading { flex-direction: column; }
++  .player-controls { grid-template-columns: 1fr 1fr; }
++  .player-timeline, .volume-control { grid-column: 1 / -1; }
++  footer { padding: 1.5rem 0; }
++}
++
++@media (prefers-reduced-motion: reduce) {
++  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
++}
++
++@media (prefers-contrast: more) {
++  :root { --line: rgba(255,255,255,.35); --muted: #f0e8e1; --subtle: #d3c8bf; }
++}
+diff --git a/tests/modified-test.cjs b/tests/modified-test.cjs
+new file mode 100644
+index 0000000..0492376
+--- /dev/null
++++ b/tests/modified-test.cjs
+@@ -0,0 +1,42 @@
++const assert = require("node:assert/strict");
++const fs = require("node:fs");
++const path = require("node:path");
++const core = require("../public/converter-core.js");
++
++const darkGrid = new Uint8Array([
++  0, 0, 0, 0, 0, 0,
++  0, 0, 240, 240, 0, 0,
++  0, 0, 240, 240, 0, 0,
++  0, 0, 0, 0, 0, 0
++]);
++const detected = core.detectBackground(darkGrid, 6, 4);
++assert.equal(detected, "dark");
++const conversion = core.createMask(darkGrid, 6, 4, { background: "dark", threshold: 128 });
++const midi = core.buildMidi(conversion.mask, 6, 4, { startNote: 36, tempo: 120 });
++assert.equal(Buffer.from(midi.bytes.subarray(0, 4)).toString("ascii"), "MThd");
++assert.ok(midi.noteCount > 0);
++assert.equal(midi.notes.length, midi.noteCount);
++assert.ok(midi.notes.every((note) => Number.isFinite(note.startBeat) && note.durationBeats > 0 && note.pitch >= 0 && note.pitch <= 127));
++
++const html = fs.readFileSync(path.join(__dirname, "../public/index.html"), "utf8");
++for (const required of [
++  "<link rel=\"canonical\" href=\"https://image-to-midi-converter.pages.dev/\">",
++  "\"@type\": \"WebApplication\"",
++  "\"@type\": \"HowTo\"",
++  "\"@type\": \"FAQPage\"",
++  "entire conversion runs locally in your browser",
++  "id=\"midi-player\"",
++  "built-in browser synthesizer",
++  "Image to MIDI Converter – Free Online PNG/JPG to MIDI"
++]) assert.ok(html.includes(required), `missing: ${required}`);
++
++const appJs = fs.readFileSync(path.join(__dirname, "../public/app.js"), "utf8");
++for (const required of ["AudioContext", "startPlayback", "pausePlayback", "preparePlayer", "player-position"]) {
++  assert.ok(appJs.includes(required), `missing playback implementation: ${required}`);
++}
++
++for (const file of ["robots.txt", "sitemap.xml", "llms.txt", "site.webmanifest", "og-image.png", "_headers"]) {
++  assert.ok(fs.existsSync(path.join(__dirname, "../public", file)), `missing public/${file}`);
++}
++
++console.log(`MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true background=${detected} midi_header=${Buffer.from(midi.bytes.subarray(0, 4)).toString("ascii")} midi_bytes=${midi.bytes.length} note_shapes=${midi.noteCount} player_notes=${midi.notes.length}`);
+diff --git a/wrangler.jsonc b/wrangler.jsonc
+new file mode 100644
+index 0000000..5f10662
+--- /dev/null
++++ b/wrangler.jsonc
+@@ -0,0 +1,6 @@
++{
++  "$schema": "node_modules/wrangler/config-schema.json",
++  "name": "image-to-midi-converter",
++  "pages_build_output_dir": "./public",
++  "compatibility_date": "2026-08-24"
++}
