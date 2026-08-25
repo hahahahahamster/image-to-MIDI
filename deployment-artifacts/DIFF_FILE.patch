@@ -37,10 +37,17 @@ index 54b7636..ad710af 100644
  
  /*.js
 diff --git a/public/index.html b/public/index.html
-index 794f703..5e1d410 100644
+index 794f703..b321844 100644
 --- a/public/index.html
 +++ b/public/index.html
-@@ -9,32 +9,34 @@
+@@ -3,38 +3,41 @@
+ <head>
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
++  <meta name="referrer" content="no-referrer-when-downgrade">
+   <title>Image to MIDI Converter – Free Online PNG/JPG to MIDI</title>
+   <meta name="description" content="Convert PNG, JPG, GIF, BMP, and WebP images into MIDI files for free, preview the notes online, and download the result. Private browser processing.">
+   <meta name="keywords" content="image to MIDI, image MIDI converter, picture to MIDI, PNG to MIDI, JPG to MIDI, MIDI art, piano roll art">
    <meta name="author" content="Image to MIDI Converter">
    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
    <meta name="theme-color" content="#171412">
@@ -81,7 +88,7 @@ index 794f703..5e1d410 100644
          "description": "A free browser-based tool that maps image pixels to musical notes, previews them with a built-in synthesizer, and exports a Standard MIDI File.",
          "applicationCategory": "MultimediaApplication",
          "operatingSystem": "Any modern web browser",
-@@ -52,7 +54,7 @@
+@@ -52,7 +55,7 @@
        },
        {
          "@type": "HowTo",
@@ -90,7 +97,7 @@ index 794f703..5e1d410 100644
          "name": "How to convert an image to MIDI",
          "totalTime": "PT1M",
          "step": [
-@@ -63,7 +65,7 @@
+@@ -63,7 +66,7 @@
        },
        {
          "@type": "FAQPage",
@@ -99,7 +106,7 @@ index 794f703..5e1d410 100644
          "mainEntity": [
            {"@type": "Question", "name": "How does image-to-MIDI conversion work?", "acceptedAnswer": {"@type": "Answer", "text": "The image is reduced to a note grid. Horizontal position becomes time, vertical position becomes pitch, and detected foreground shapes become MIDI notes."}},
            {"@type": "Question", "name": "Are uploaded images stored?", "acceptedAnswer": {"@type": "Answer", "text": "No. The converter processes the image locally in your browser and does not send it to a server."}},
-@@ -284,6 +286,12 @@
+@@ -284,6 +287,12 @@
        </aside>
      </section>
  
@@ -112,7 +119,7 @@ index 794f703..5e1d410 100644
      <section class="content-section faq-section" id="faq" aria-labelledby="faq-title">
        <p class="step-label">Questions</p>
        <h2 id="faq-title">Image to MIDI FAQ</h2>
-@@ -305,5 +313,10 @@
+@@ -305,5 +314,10 @@
  
    <script src="/converter-core.js" defer></script>
    <script src="/app.js" defer></script>
@@ -178,10 +185,10 @@ index ba5aca2..b405f7b 100644
  .eyebrow { display: inline-flex; align-items: center; gap: .55rem; padding: .45rem .8rem; border: 1px solid rgba(255, 122, 26, .3); border-radius: 999px; background: rgba(255, 122, 26, .08); }
  .status-dot { width: .48rem; height: .48rem; border-radius: 50%; background: var(--success); box-shadow: 0 0 0 .24rem rgba(84, 212, 155, .12); }
 diff --git a/tests/modified-test.cjs b/tests/modified-test.cjs
-index 0492376..ec1087f 100644
+index 0492376..88d5355 100644
 --- a/tests/modified-test.cjs
 +++ b/tests/modified-test.cjs
-@@ -20,14 +20,22 @@ assert.ok(midi.notes.every((note) => Number.isFinite(note.startBeat) && note.dur
+@@ -20,14 +20,23 @@ assert.ok(midi.notes.every((note) => Number.isFinite(note.startBeat) && note.dur
  
  const html = fs.readFileSync(path.join(__dirname, "../public/index.html"), "utf8");
  for (const required of [
@@ -195,6 +202,7 @@ index 0492376..ec1087f 100644
    "built-in browser synthesizer",
 -  "Image to MIDI Converter – Free Online PNG/JPG to MIDI"
 +  "Image to MIDI Converter – Free Online PNG/JPG to MIDI",
++  "<meta name=\"referrer\" content=\"no-referrer-when-downgrade\">",
 +  "ca-pub-8253931220564393",
 +  "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8253931220564393",
 +  "https://pleased-report.com/b.3sVT0YP-3VpXv/bVm-VTJVZHDQ0/3HMVzoU-wQM/zPYL1/LNT/cqzUNNTlAlz/NtjJkQ",
@@ -206,7 +214,7 @@ index 0492376..ec1087f 100644
  ]) assert.ok(html.includes(required), `missing: ${required}`);
  
  const appJs = fs.readFileSync(path.join(__dirname, "../public/app.js"), "utf8");
-@@ -38,5 +46,11 @@ for (const required of ["AudioContext", "startPlayback", "pausePlayback", "prepa
+@@ -38,5 +47,11 @@ for (const required of ["AudioContext", "startPlayback", "pausePlayback", "prepa
  for (const file of ["robots.txt", "sitemap.xml", "llms.txt", "site.webmanifest", "og-image.png", "_headers"]) {
    assert.ok(fs.existsSync(path.join(__dirname, "../public", file)), `missing public/${file}`);
  }

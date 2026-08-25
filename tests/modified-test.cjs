@@ -28,6 +28,7 @@ for (const required of [
   "id=\"midi-player\"",
   "built-in browser synthesizer",
   "Image to MIDI Converter – Free Online PNG/JPG to MIDI",
+  "<meta name=\"referrer\" content=\"no-referrer-when-downgrade\">",
   "ca-pub-8253931220564393",
   "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8253931220564393",
   "https://pleased-report.com/b.3sVT0YP-3VpXv/bVm-VTJVZHDQ0/3HMVzoU-wQM/zPYL1/LNT/cqzUNNTlAlz/NtjJkQ",
