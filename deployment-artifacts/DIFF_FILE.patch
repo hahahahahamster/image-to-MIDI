@@ -1,13 +1,204 @@
+diff --git a/README.md b/README.md
+index ef30f5e..731a686 100644
+--- a/README.md
++++ b/README.md
+@@ -2,7 +2,7 @@
+ 
+ A free web application that converts image shapes into playable MIDI notes. The Cloudflare Pages version processes images entirely in the browser, previews the generated sequence with a built-in Web Audio synth, and downloads a Standard MIDI File.
+ 
+-**Live site:** https://image-to-midi-converter.pages.dev/
++**Live site:** https://img2midi.online/
+ 
+ ## Features
+ 
+@@ -32,7 +32,7 @@ npx wrangler whoami
+ npx wrangler pages deploy public --project-name=image-to-midi-converter --branch=main
+ ```
+ 
+-Cloudflare assigns the free domain `https://image-to-midi-converter.pages.dev/`.
++Cloudflare Pages serves the project at the custom domain `https://img2midi.online/` and retains the free Pages domain as a fallback.
+ 
+ ### Browser playback
+ 
+diff --git a/deployment-artifacts/ROLLBACK.sh b/deployment-artifacts/ROLLBACK.sh
+old mode 100644
+new mode 100755
 diff --git a/public/_headers b/public/_headers
-index 95dad5a..3d32fce 100644
+index 54b7636..3d32fce 100644
 --- a/public/_headers
 +++ b/public/_headers
 @@ -3,7 +3,7 @@
    X-Frame-Options: DENY
    Referrer-Policy: strict-origin-when-cross-origin
    Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
--  Content-Security-Policy: default-src 'self'; img-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net blob: data:; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://static.cloudflareinsights.com https://ep2.adtrafficquality.google; connect-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://ep1.adtrafficquality.google https://static.cloudflareinsights.com https://cloudflareinsights.com; frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://ep2.adtrafficquality.google https://www.google.com; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+-  Content-Security-Policy: default-src 'self'; img-src 'self' blob: data:; script-src 'self' 'unsafe-inline'; style-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
 +  Content-Security-Policy: default-src 'self'; img-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://ep1.adtrafficquality.google blob: data:; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://static.cloudflareinsights.com https://ep2.adtrafficquality.google; connect-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://ep1.adtrafficquality.google https://static.cloudflareinsights.com https://cloudflareinsights.com; frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://ep2.adtrafficquality.google https://www.google.com; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
    X-Robots-Tag: all
  
  /*.js
+diff --git a/public/index.html b/public/index.html
+index 794f703..11d7ded 100644
+--- a/public/index.html
++++ b/public/index.html
+@@ -9,32 +9,34 @@
+   <meta name="author" content="Image to MIDI Converter">
+   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+   <meta name="theme-color" content="#171412">
+-  <link rel="canonical" href="https://image-to-midi-converter.pages.dev/">
++  <link rel="canonical" href="https://img2midi.online/">
+   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+   <link rel="manifest" href="/site.webmanifest">
+   <meta property="og:type" content="website">
+   <meta property="og:site_name" content="Image to MIDI Converter">
+   <meta property="og:title" content="Free Image to MIDI Converter">
+   <meta property="og:description" content="Turn an image into a MIDI piano-roll pattern, preview it with a built-in synth, and download the .mid file. No image upload required.">
+-  <meta property="og:url" content="https://image-to-midi-converter.pages.dev/">
+-  <meta property="og:image" content="https://image-to-midi-converter.pages.dev/og-image.png">
++  <meta property="og:url" content="https://img2midi.online/">
++  <meta property="og:image" content="https://img2midi.online/og-image.png">
+   <meta property="og:image:width" content="1200">
+   <meta property="og:image:height" content="630">
+   <meta property="og:image:alt" content="Image to MIDI Converter interface with a colorful piano roll">
+   <meta name="twitter:card" content="summary_large_image">
+   <meta name="twitter:title" content="Free Image to MIDI Converter">
+   <meta name="twitter:description" content="Convert PNG and JPG images to MIDI locally in your browser.">
+-  <meta name="twitter:image" content="https://image-to-midi-converter.pages.dev/og-image.png">
++  <meta name="twitter:image" content="https://img2midi.online/og-image.png">
+   <link rel="stylesheet" href="/styles.css">
++  <meta name="google-adsense-account" content="ca-pub-8253931220564393">
++  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8253931220564393" crossorigin="anonymous"></script>
+   <script type="application/ld+json">
+   {
+     "@context": "https://schema.org",
+     "@graph": [
+       {
+         "@type": "WebApplication",
+-        "@id": "https://image-to-midi-converter.pages.dev/#app",
++        "@id": "https://img2midi.online/#app",
+         "name": "Image to MIDI Converter",
+-        "url": "https://image-to-midi-converter.pages.dev/",
++        "url": "https://img2midi.online/",
+         "description": "A free browser-based tool that maps image pixels to musical notes, previews them with a built-in synthesizer, and exports a Standard MIDI File.",
+         "applicationCategory": "MultimediaApplication",
+         "operatingSystem": "Any modern web browser",
+@@ -52,7 +54,7 @@
+       },
+       {
+         "@type": "HowTo",
+-        "@id": "https://image-to-midi-converter.pages.dev/#howto",
++        "@id": "https://img2midi.online/#howto",
+         "name": "How to convert an image to MIDI",
+         "totalTime": "PT1M",
+         "step": [
+@@ -63,7 +65,7 @@
+       },
+       {
+         "@type": "FAQPage",
+-        "@id": "https://image-to-midi-converter.pages.dev/#faq",
++        "@id": "https://img2midi.online/#faq",
+         "mainEntity": [
+           {"@type": "Question", "name": "How does image-to-MIDI conversion work?", "acceptedAnswer": {"@type": "Answer", "text": "The image is reduced to a note grid. Horizontal position becomes time, vertical position becomes pitch, and detected foreground shapes become MIDI notes."}},
+           {"@type": "Question", "name": "Are uploaded images stored?", "acceptedAnswer": {"@type": "Answer", "text": "No. The converter processes the image locally in your browser and does not send it to a server."}},
+@@ -284,6 +286,12 @@
+       </aside>
+     </section>
+ 
++    <section class="sponsor-card" aria-label="Sponsored link">
++      <p class="step-label">Support this free tool</p>
++      <p>Optional sponsored link — opening it starts in a new tab.</p>
++      <a class="sponsor-link" href="https://pleased-report.com/b.3sVT0YP-3VpXv/bVm-VTJVZHDQ0/3HMVzoU-wQM/zPYL1/LNT/cqzUNNTlAlz/NtjJkQ" target="_blank" rel="sponsored nofollow noopener noreferrer">Open sponsored link</a>
++    </section>
++
+     <section class="content-section faq-section" id="faq" aria-labelledby="faq-title">
+       <p class="step-label">Questions</p>
+       <h2 id="faq-title">Image to MIDI FAQ</h2>
+diff --git a/public/llms.txt b/public/llms.txt
+index 7d54826..196c75f 100644
+--- a/public/llms.txt
++++ b/public/llms.txt
+@@ -2,7 +2,7 @@
+ 
+ > A free, private, browser-based tool that maps image geometry to MIDI note events, previews them with a built-in synth, and downloads a Standard MIDI File.
+ 
+-Canonical URL: https://image-to-midi-converter.pages.dev/
++Canonical URL: https://img2midi.online/
+ Source: https://github.com/hahahahahamster/image-to-MIDI
+ 
+ ## Primary capability
+diff --git a/public/robots.txt b/public/robots.txt
+index a3f132f..c64c06b 100644
+--- a/public/robots.txt
++++ b/public/robots.txt
+@@ -1,4 +1,4 @@
+ User-agent: *
+ Allow: /
+ 
+-Sitemap: https://image-to-midi-converter.pages.dev/sitemap.xml
++Sitemap: https://img2midi.online/sitemap.xml
+diff --git a/public/sitemap.xml b/public/sitemap.xml
+index 24f00ed..6ab4f24 100644
+--- a/public/sitemap.xml
++++ b/public/sitemap.xml
+@@ -1,7 +1,7 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+   <url>
+-    <loc>https://image-to-midi-converter.pages.dev/</loc>
++    <loc>https://img2midi.online/</loc>
+     <lastmod>2026-08-24</lastmod>
+     <changefreq>monthly</changefreq>
+     <priority>1.0</priority>
+diff --git a/public/styles.css b/public/styles.css
+index ba5aca2..b405f7b 100644
+--- a/public/styles.css
++++ b/public/styles.css
+@@ -42,7 +42,12 @@ nav a:hover { color: var(--text); }
+ .source-link { padding: .55rem .85rem; border: 1px solid var(--line); border-radius: .65rem; }
+ 
+ main { position: relative; z-index: 1; }
+-.hero { width: min(900px, calc(100% - 2rem)); margin: 0 auto; padding: clamp(4.5rem, 10vw, 8.5rem) 0 clamp(3rem, 7vw, 5rem); text-align: center; }
++.hero { width: min(900px, calc(100% - 2rem)); margin: 0 auto; padding: clamp(2.25rem, 5vw, 4.25rem) 0 clamp(2.5rem, 5vw, 4.5rem); text-align: center; }
++.sponsor-card { width: min(900px, calc(100% - 2rem)); margin: 0 auto clamp(2rem, 5vw, 4rem); padding: 1.15rem 1.25rem; border: 1px solid var(--line); border-radius: 1rem; background: rgba(255, 255, 255, .03); text-align: center; }
++.sponsor-card .step-label { margin-bottom: .35rem; }
++.sponsor-card p:not(.step-label) { margin: 0 0 .8rem; color: var(--muted); }
++.sponsor-link { display: inline-flex; align-items: center; min-height: 2.75rem; padding: .65rem 1rem; border-radius: .7rem; background: var(--primary); color: #171412; font-weight: 800; text-decoration: none; }
++.sponsor-link:hover { background: var(--primary-light); }
+ .eyebrow, .step-label { margin: 0 0 1rem; color: var(--primary-light); font-size: .78rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+ .eyebrow { display: inline-flex; align-items: center; gap: .55rem; padding: .45rem .8rem; border: 1px solid rgba(255, 122, 26, .3); border-radius: 999px; background: rgba(255, 122, 26, .08); }
+ .status-dot { width: .48rem; height: .48rem; border-radius: 50%; background: var(--success); box-shadow: 0 0 0 .24rem rgba(84, 212, 155, .12); }
+diff --git a/tests/modified-test.cjs b/tests/modified-test.cjs
+index 0492376..93faeef 100644
+--- a/tests/modified-test.cjs
++++ b/tests/modified-test.cjs
+@@ -20,14 +20,18 @@ assert.ok(midi.notes.every((note) => Number.isFinite(note.startBeat) && note.dur
+ 
+ const html = fs.readFileSync(path.join(__dirname, "../public/index.html"), "utf8");
+ for (const required of [
+-  "<link rel=\"canonical\" href=\"https://image-to-midi-converter.pages.dev/\">",
++  "<link rel=\"canonical\" href=\"https://img2midi.online/\">",
+   "\"@type\": \"WebApplication\"",
+   "\"@type\": \"HowTo\"",
+   "\"@type\": \"FAQPage\"",
+   "entire conversion runs locally in your browser",
+   "id=\"midi-player\"",
+   "built-in browser synthesizer",
+-  "Image to MIDI Converter – Free Online PNG/JPG to MIDI"
++  "Image to MIDI Converter – Free Online PNG/JPG to MIDI",
++  "ca-pub-8253931220564393",
++  "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8253931220564393",
++  "https://pleased-report.com/b.3sVT0YP-3VpXv/bVm-VTJVZHDQ0/3HMVzoU-wQM/zPYL1/LNT/cqzUNNTlAlz/NtjJkQ",
++  "Sponsored link"
+ ]) assert.ok(html.includes(required), `missing: ${required}`);
+ 
+ const appJs = fs.readFileSync(path.join(__dirname, "../public/app.js"), "utf8");
+@@ -38,5 +42,10 @@ for (const required of ["AudioContext", "startPlayback", "pausePlayback", "prepa
+ for (const file of ["robots.txt", "sitemap.xml", "llms.txt", "site.webmanifest", "og-image.png", "_headers"]) {
+   assert.ok(fs.existsSync(path.join(__dirname, "../public", file)), `missing public/${file}`);
+ }
++const headers = fs.readFileSync(path.join(__dirname, "../public/_headers"), "utf8");
++assert.ok(headers.includes("pagead2.googlesyndication.com"), "CSP must allow Google AdSense");
++assert.ok(headers.includes("ep1.adtrafficquality.google"), "CSP must allow AdSense traffic quality");
++assert.ok(headers.includes("ep2.adtrafficquality.google"), "CSP must allow AdSense SODAR");
++assert.ok(headers.includes("https://www.google.com"), "CSP must allow the AdSense verification frame");
+ 
+ console.log(`MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true background=${detected} midi_header=${Buffer.from(midi.bytes.subarray(0, 4)).toString("ascii")} midi_bytes=${midi.bytes.length} note_shapes=${midi.noteCount} player_notes=${midi.notes.length}`);
