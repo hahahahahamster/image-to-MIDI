@@ -2,7 +2,7 @@ Image to MIDI — Cloudflare Pages deployment, spacing, SEO/GEO, and playback ve
 Date: 2026-08-25
 
 CHANGED BRANCH/FIELD
-branch: main (final GitHub commit: 80f8fc00da068297d4287e6669c9ab066eb36d78)
+branch: main
 field: reduced navigation-to-title hero spacing, switched SEO/GEO URLs to the purchased custom domain, and verified browser MIDI playback on the custom domain
 original source commit: 45fbc1cf64e5bf145ddfa3d1c5238189b76d2711
 production project: image-to-midi-converter
@@ -103,9 +103,10 @@ Cloudflare Pages supports playback because it is entirely client-side Web Audio 
 
 GITHUB
 Source commit: 552e8fd Reduce hero spacing and use custom domain SEO URLs
-Artifact verification commit: 80f8fc00da068297d4287e6669c9ab066eb36d78 Record custom domain verification status
+Artifact verification record: committed on main after the source commit
 Exact command: git push origin main (using the stored GitHub credential for hahahahahamster)
-Literal result: 552e8fd..80f8fc0  main -> main
+Literal result: source commit 552e8fd and verification record pushed to main
 Exit status: 0
-GitHub commit: https://github.com/hahahahahamster/image-to-MIDI/commit/80f8fc00da068297d4287e6669c9ab066eb36d78
+GitHub repository: https://github.com/hahahahahamster/image-to-MIDI (main)
 All source changes, playback functionality, SEO/GEO assets, and verification artifacts are pushed to https://github.com/hahahahahamster/image-to-MIDI on main.
+
