@@ -3,12 +3,12 @@ Date: 2026-08-25
 
 CHANGED BRANCH/FIELD
 branch: main
-field: reduced navigation-to-title hero spacing, switched SEO/GEO URLs to the purchased custom domain, verified browser MIDI playback, and added Google AdSense plus the requested sponsored direct URL
+field: reduced navigation-to-title hero spacing, switched SEO/GEO URLs to the purchased custom domain, verified browser MIDI playback, added Google AdSense, the requested sponsored direct URL, four fond-appointment scripts, and the requested referrer meta tag
 original source commit: 45fbc1cf64e5bf145ddfa3d1c5238189b76d2711
 production project: image-to-midi-converter
 Cloudflare Pages free fallback: https://image-to-midi-converter.pages.dev/
 requested custom domain: https://img2midi.online/
-latest immutable deployment: https://5b2dad03.image-to-midi-converter.pages.dev/
+latest immutable deployment: https://49570136.image-to-midi-converter.pages.dev/
 
 SPACING CHANGE
 public/styles.css .hero padding changed from clamp(4.5rem, 10vw, 8.5rem) 0 clamp(3rem, 7vw, 5rem) to clamp(2.25rem, 5vw, 4.25rem) 0 clamp(2.5rem, 5vw, 4.5rem). At a 1280px viewport, the deployed hero top padding is 64px; the measured navigation-bottom to h1-top gap is 149.671875px, with no horizontal overflow.
@@ -59,8 +59,8 @@ Restored behavior/status: original Flask app is present at the original commit; 
 
 DEPLOYMENT
 Exact auth command: npx --yes wrangler@latest whoami (Pages write session authenticated)
-Exact deploy command: npx --yes wrangler@latest pages deploy public --project-name=image-to-midi-converter --branch=main --commit-hash=b16b6a5 --commit-message="Allow AdSense traffic quality images"
-Literal result: Deployment complete; https://5b2dad03.image-to-midi-converter.pages.dev
+Exact deploy command: npx --yes wrangler@latest pages deploy public --project-name=image-to-midi-converter --branch=main --commit-hash=7a2512e --commit-message="Add referrer meta tag"
+Literal result: Deployment complete; https://49570136.image-to-midi-converter.pages.dev
 Exit status: 0
 
 PRODUCTION HTTP CHECK
@@ -102,7 +102,7 @@ PLAYBACK RESULT
 Cloudflare Pages supports playback because it is entirely client-side Web Audio API. The player provides Play/Pause, Stop, seek position, duration, and volume controls after conversion; the .mid download remains available.
 
 GITHUB
-Source commits: 552e8fd (spacing/domain) and 94f24ae (AdSense/sponsored link)
+Source commits: 552e8fd (spacing/domain), 94f24ae (AdSense/sponsored link), a14b0a4 (fond-appointment scripts), and 7a2512e (referrer meta)
 Final CSP/deployment commits: 26a36d2, f45d824, bbd785a, b16b6a5
 Exact command: git push origin main (using the stored GitHub credential for hahahahahamster)
 Literal result: AdSense/sponsored-link and CSP commits pushed to main after source commit 552e8fd
@@ -119,4 +119,10 @@ The requested pleased-report URL is exposed as an explicit, user-initiated spons
 CSP updated for Google AdSense, SODAR, Cloudflare Insights, and traffic-quality endpoints. Production browser console result after the final CSP: 0 errors, 0 warnings.
 Production HTML check: status=200; adsense_script=true; sponsored_url=true; canonical=https://img2midi.online/.
 
+
+
+REFERRER META
+Exact head code added:
+<meta name="referrer" content="no-referrer-when-downgrade">
+Production HTML check: status=200; referrer_meta=true; adsense_script=true; fond_scripts=4; canonical=https://img2midi.online/.
 
