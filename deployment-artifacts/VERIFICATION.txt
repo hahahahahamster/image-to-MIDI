@@ -207,3 +207,53 @@ Exact command: git push origin main
 Literal result: f20a5db..dd1a39c main -> main
 Exit status: 0
 
+FOLLOW-UP CHANGE: CACHE-BUST THE DOWNLOAD FLOW
+Date: 2026-08-25
+
+CHANGED BRANCH/FIELD
+branch: main
+original source commit: 47fbfceccff9c65e8584a8e165321061786b68d4
+field: versioned the app.js script reference as /app.js?v=47fbfce so Cloudflare''s seven-day JavaScript cache cannot serve the previous download handler after deployment
+
+FOUR ARTIFACT PATHS
+MODIFIED_FILE: C:\Users\LENOVO\Documents\Playground\image-to-midi-cloudflare-20260824\public\index.html
+DIFF_FILE: C:\Users\LENOVO\Documents\Playground\image-to-midi-cloudflare-20260824\deployment-artifacts\DIFF_FILE.patch
+VERIFICATION.txt: C:\Users\LENOVO\Documents\Playground\image-to-midi-cloudflare-20260824\deployment-artifacts\VERIFICATION.txt
+executable ROLLBACK.sh: C:\Users\LENOVO\Documents\Playground\image-to-midi-cloudflare-20260824\deployment-artifacts\ROLLBACK.sh
+
+BASELINE
+Exact command: cd C:\Users\LENOVO\Documents\Playground\baseline-cache-bust-20260825; npm test; node --check public/app.js; node --check public/converter-core.js
+Exact input: detached worktree at 47fbfceccff9c65e8584a8e165321061786b68d4; no stdin.
+Literal output/result:
+> image-to-midi-cloudflare@1.0.0 test
+> node tests/modified-test.cjs
+
+MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true download_sponsor_tab=true sponsor_card=removed background=dark midi_header=MThd midi_bytes=66 note_shapes=2 player_notes=2
+Exit status: 0
+
+MODIFIED
+Exact command: cd C:\Users\LENOVO\Documents\Playground\modified-cache-bust-20260825; npm test; node --check public/app.js; node --check public/converter-core.js
+Exact input: modified worktree with no stdin.
+Literal output/result:
+> image-to-midi-cloudflare@1.0.0 test
+> node tests/modified-test.cjs
+
+MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true download_sponsor_tab=true sponsor_card=removed background=dark midi_header=MThd midi_bytes=66 note_shapes=2 player_notes=2
+Exit status: 0
+
+ROLLBACK
+Exact command: "C:\Program Files\Git\bin\bash.exe" "C:\Users\LENOVO\Documents\Playground\rollback-test-cache-bust-20260825\deployment-artifacts\ROLLBACK.sh"
+Exact input: rollback-test copy based on 47fbfceccff9c65e8584a8e165321061786b68d4 with the cache-busted index.html and executable ROLLBACK.sh.
+Literal output/result:
+HEAD is now at 47fbfce Record sponsored download deployment verification
+ROLLBACK source_head=47fbfceccff9c65e8584a8e165321061786b68d4 public_index=present package_json=present original_flask=present
+Restored behavior check: script_src=<script src="/app.js" defer></script>; sponsor_flow=True.
+Exit status: 0
+Restored behavior/status: the prior page and unversioned app.js reference are restored.
+
+CACHE CHECK
+Exact command: PowerShell Invoke-WebRequest checks against https://img2midi.online/app.js and https://img2midi.online/app.js?v=dd1a39c
+Literal output/result:
+unversioned app.js sponsorFunction=False; cache-busted app.js sponsorFunction=True; unversioned Cache-Control=public, max-age=604800.
+Result: the versioned script reference is required to deliver the new download handler through the configured cache policy.
+

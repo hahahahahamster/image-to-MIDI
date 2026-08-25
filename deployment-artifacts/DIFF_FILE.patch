@@ -1,37 +1,30 @@
 diff --git a/deployment-artifacts/ROLLBACK.sh b/deployment-artifacts/ROLLBACK.sh
-index 2ea3bd7..7ddb3ce 100755
+index 7ddb3ce..c7e2f95 100755
 --- a/deployment-artifacts/ROLLBACK.sh
 +++ b/deployment-artifacts/ROLLBACK.sh
 @@ -1,6 +1,6 @@
  #!/usr/bin/env sh
  set -eu
--ORIGINAL_HASH="45fbc1cf64e5bf145ddfa3d1c5238189b76d2711"
-+ORIGINAL_HASH="f20a5db5b48ca2163d62d3b5c0bbbc9f92fa1f3b"
+-ORIGINAL_HASH="f20a5db5b48ca2163d62d3b5c0bbbc9f92fa1f3b"
++ORIGINAL_HASH="47fbfceccff9c65e8584a8e165321061786b68d4"
  ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
  cd "$ROOT"
  git cat-file -e "$ORIGINAL_HASH^{commit}"
-@@ -8,4 +8,4 @@ git reset --hard "$ORIGINAL_HASH"
- git clean -fd -- public package.json tests wrangler.jsonc
- if [ -e public/index.html ]; then PUBLIC_STATE="present"; else PUBLIC_STATE="absent"; fi
- if [ -e package.json ]; then PACKAGE_STATE="present"; else PACKAGE_STATE="absent"; fi
--printf 'ROLLBACK source_head=%s public_index=%s package_json=%s original_flask=%s\n' "$(git rev-parse HEAD)" "$PUBLIC_STATE" "$PACKAGE_STATE" "$(test -f app.py && printf present || printf absent)"
-\ No newline at end of file
-+printf 'ROLLBACK source_head=%s public_index=%s package_json=%s original_flask=%s\n' "$(git rev-parse HEAD)" "$PUBLIC_STATE" "$PACKAGE_STATE" "$(test -f app.py && printf present || printf absent)"
 diff --git a/deployment-artifacts/VERIFICATION.txt b/deployment-artifacts/VERIFICATION.txt
-index 83f4b01..754289a 100644
+index 754289a..74542fe 100644
 --- a/deployment-artifacts/VERIFICATION.txt
 +++ b/deployment-artifacts/VERIFICATION.txt
-@@ -126,3 +126,84 @@ Exact head code added:
- <meta name="referrer" content="no-referrer-when-downgrade">
- Production HTML check: status=200; referrer_meta=true; adsense_script=true; fond_scripts=4; canonical=https://img2midi.online/.
+@@ -207,3 +207,53 @@ Exact command: git push origin main
+ Literal result: f20a5db..dd1a39c main -> main
+ Exit status: 0
  
-+FOLLOW-UP CHANGE: SPONSORED TAB ON MIDI DOWNLOAD
++FOLLOW-UP CHANGE: CACHE-BUST THE DOWNLOAD FLOW
 +Date: 2026-08-25
 +
 +CHANGED BRANCH/FIELD
 +branch: main
-+original source commit: f20a5db5b48ca2163d62d3b5c0bbbc9f92fa1f3b
-+field: removed the visible sponsored-link card and its CSS; the download button now opens the requested sponsored URL in a new tab during the user click, while the MIDI download and online player remain unchanged
++original source commit: 47fbfceccff9c65e8584a8e165321061786b68d4
++field: versioned the app.js script reference as /app.js?v=47fbfce so Cloudflare''s seven-day JavaScript cache cannot serve the previous download handler after deployment
 +
 +FOUR ARTIFACT PATHS
 +MODIFIED_FILE: C:\Users\LENOVO\Documents\Playground\image-to-midi-cloudflare-20260824\public\index.html
@@ -40,20 +33,17 @@ index 83f4b01..754289a 100644
 +executable ROLLBACK.sh: C:\Users\LENOVO\Documents\Playground\image-to-midi-cloudflare-20260824\deployment-artifacts\ROLLBACK.sh
 +
 +BASELINE
-+Exact command: cd C:\Users\LENOVO\Documents\Playground\baseline-download-tab-20260825; npm test; node --check public/app.js; node --check public/converter-core.js
-+Exact input: detached worktree at f20a5db5b48ca2163d62d3b5c0bbbc9f92fa1f3b; no stdin.
++Exact command: cd C:\Users\LENOVO\Documents\Playground\baseline-cache-bust-20260825; npm test; node --check public/app.js; node --check public/converter-core.js
++Exact input: detached worktree at 47fbfceccff9c65e8584a8e165321061786b68d4; no stdin.
 +Literal output/result:
 +> image-to-midi-cloudflare@1.0.0 test
 +> node tests/modified-test.cjs
 +
-+MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true background=dark midi_header=MThd midi_bytes=66 note_shapes=2 player_notes=2
-+BASELINE_NODE_TEST_EXIT=0
-+BASELINE_APP_CHECK_EXIT=0
-+BASELINE_CORE_CHECK_EXIT=0
++MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true download_sponsor_tab=true sponsor_card=removed background=dark midi_header=MThd midi_bytes=66 note_shapes=2 player_notes=2
 +Exit status: 0
 +
 +MODIFIED
-+Exact command: cd C:\Users\LENOVO\Documents\Playground\modified-download-tab-20260825; npm test; node --check public/app.js; node --check public/converter-core.js
++Exact command: cd C:\Users\LENOVO\Documents\Playground\modified-cache-bust-20260825; npm test; node --check public/app.js; node --check public/converter-core.js
 +Exact input: modified worktree with no stdin.
 +Literal output/result:
 +> image-to-midi-cloudflare@1.0.0 test
@@ -63,160 +53,43 @@ index 83f4b01..754289a 100644
 +Exit status: 0
 +
 +ROLLBACK
-+Exact command: "C:\Program Files\Git\bin\bash.exe" "C:\Users\LENOVO\Documents\Playground\rollback-test-download-tab-20260825-b\deployment-artifacts\ROLLBACK.sh"
-+Exact input: rollback-test copy based on f20a5db5b48ca2163d62d3b5c0bbbc9f92fa1f3b with the modified public/, tests/, and executable ROLLBACK.sh.
++Exact command: "C:\Program Files\Git\bin\bash.exe" "C:\Users\LENOVO\Documents\Playground\rollback-test-cache-bust-20260825\deployment-artifacts\ROLLBACK.sh"
++Exact input: rollback-test copy based on 47fbfceccff9c65e8584a8e165321061786b68d4 with the cache-busted index.html and executable ROLLBACK.sh.
 +Literal output/result:
-+HEAD is now at f20a5db Document referrer metadata deployment
-+ROLLBACK source_head=f20a5db5b48ca2163d62d3b5c0bbbc9f92fa1f3b public_index=present package_json=present original_flask=present
-+Restored behavior check: sponsor_card=True; download_sponsor_tab=False; public_index=True; package_json=True; original_flask=True.
++HEAD is now at 47fbfce Record sponsored download deployment verification
++ROLLBACK source_head=47fbfceccff9c65e8584a8e165321061786b68d4 public_index=present package_json=present original_flask=present
++Restored behavior check: script_src=<script src="/app.js" defer></script>; sponsor_flow=True.
 +Exit status: 0
-+Restored behavior/status: the prior f20a5db page with the visible sponsor card and original download flow is restored.
++Restored behavior/status: the prior page and unversioned app.js reference are restored.
 +
-+LOCAL BROWSER CHECK
-+Exact command: npx --yes --package @playwright/cli playwright-cli open http://127.0.0.1:8788 --headed; snapshot; click "Use demo pattern"; snapshot; click "Convert and download"; tab-list
-+Exact input: demo-heart.png generated by the existing demo button.
++CACHE CHECK
++Exact command: PowerShell Invoke-WebRequest checks against https://img2midi.online/app.js and https://img2midi.online/app.js?v=dd1a39c
 +Literal output/result:
-+Snapshot after change contained no "Support this free tool", "Optional sponsored link", or "Open sponsored link" section.
-+Download event: demo-heart-to-midi.mid
-+Tab list after clicking Convert and download:
-+0: Image to MIDI Converter – Free Online PNG/JPG to MIDI (http://127.0.0.1:8788/)
-+1: EatCells.com (https://eatcells.com/land/?token=88607332aa2aa3c68006e0329ce4e72a)
-+Result: a new tab opened from the download click; the supplied pleased-report URL redirected to EatCells.com.
-+Exit status: 0
++unversioned app.js sponsorFunction=False; cache-busted app.js sponsorFunction=True; unversioned Cache-Control=public, max-age=604800.
++Result: the versioned script reference is required to deliver the new download handler through the configured cache policy.
 +
-+IMPLEMENTATION
-+public/app.js opens the supplied sponsored URL with a transient anchor using target="_blank" and rel="sponsored nofollow noopener noreferrer" before the async conversion delay, preserving the browser user gesture. public/index.html no longer renders the sponsor card. public/styles.css no longer contains sponsor-card or sponsor-link rules. The downloaded .mid and Web Audio player remain in the same submit handler.
-+
-+DEPLOYMENT
-+Exact auth command: npx --yes wrangler@latest whoami
-+Exact deploy command: npx --yes wrangler@latest pages deploy public --project-name=image-to-midi-converter --branch=main --commit-hash=dd1a39c --commit-message="Open sponsor link on MIDI download"
-+Literal result: Deployment complete; https://c0b5948a.image-to-midi-converter.pages.dev
-+Exit status: 0
-+
-+PRODUCTION HTTP CHECK
-+Exact command: PowerShell Invoke-WebRequest checks against https://c0b5948a.image-to-midi-converter.pages.dev/ and https://img2midi.online/
-+Exact input: no stdin.
-+Literal output/result:
-+https://c0b5948a.image-to-midi-converter.pages.dev/ status=200 bytes=22219 sponsorCard=False sponsorText=False downloadButton=True appScript=True
-+https://img2midi.online/ status=200 bytes=22578 sponsorCard=False sponsorText=False downloadButton=True appScript=True
-+Exit status: 0
-+
-+GITHUB
-+Exact command: git push origin main
-+Literal result: f20a5db..dd1a39c main -> main
-+Exit status: 0
-+
-diff --git a/public/app.js b/public/app.js
-index 37e68c2..851cbbe 100644
---- a/public/app.js
-+++ b/public/app.js
-@@ -34,6 +34,7 @@
-   const playerDuration = document.getElementById("player-duration");
-   const playerVolume = document.getElementById("player-volume");
-   const playerStatus = document.getElementById("player-status");
-+  const DOWNLOAD_SPONSOR_URL = "https://pleased-report.com/b.3sVT0YP-3VpXv/bVm-VTJVZHDQ0/3HMVzoU-wQM/zPYL1/LNT/cqzUNNTlAlz/NtjJkQ";
-   let currentFile = null;
-   let currentImage = null;
-   let currentObjectUrl = null;
-@@ -60,6 +61,18 @@
-     errorMessage.hidden = true;
-   }
- 
-+  function openDownloadSponsor() {
-+    const link = document.createElement("a");
-+    link.href = DOWNLOAD_SPONSOR_URL;
-+    link.target = "_blank";
-+    link.rel = "sponsored nofollow noopener noreferrer";
-+    link.tabIndex = -1;
-+    link.setAttribute("aria-hidden", "true");
-+    document.body.appendChild(link);
-+    link.click();
-+    link.remove();
-+  }
-+
-   function updatePitchInfo() {
-     const start = core.clamp(Number(startNote.value) || 0, 0, 127);
-     const rows = core.clamp(Number(heightNotes.value) || 8, 8, 400);
-@@ -488,6 +501,8 @@
-       showError("Add an image before converting.");
-       return;
-     }
-+    // Open from the download click task so the browser recognizes the user gesture.
-+    openDownloadSponsor();
-     convertButton.disabled = true;
-     convertButton.querySelector("span").textContent = "Converting…";
-     statusMessage.textContent = "Generating your MIDI file locally…";
 diff --git a/public/index.html b/public/index.html
-index b321844..7a88664 100644
+index 7a88664..cfbdd2c 100644
 --- a/public/index.html
 +++ b/public/index.html
-@@ -287,12 +287,6 @@
-       </aside>
-     </section>
+@@ -307,7 +307,7 @@
+   </footer>
  
--    <section class="sponsor-card" aria-label="Sponsored link">
--      <p class="step-label">Support this free tool</p>
--      <p>Optional sponsored link — opening it starts in a new tab.</p>
--      <a class="sponsor-link" href="https://pleased-report.com/b.3sVT0YP-3VpXv/bVm-VTJVZHDQ0/3HMVzoU-wQM/zPYL1/LNT/cqzUNNTlAlz/NtjJkQ" target="_blank" rel="sponsored nofollow noopener noreferrer">Open sponsored link</a>
--    </section>
--
-     <section class="content-section faq-section" id="faq" aria-labelledby="faq-title">
-       <p class="step-label">Questions</p>
-       <h2 id="faq-title">Image to MIDI FAQ</h2>
-diff --git a/public/styles.css b/public/styles.css
-index b405f7b..1c3df40 100644
---- a/public/styles.css
-+++ b/public/styles.css
-@@ -43,11 +43,6 @@ nav a:hover { color: var(--text); }
- 
- main { position: relative; z-index: 1; }
- .hero { width: min(900px, calc(100% - 2rem)); margin: 0 auto; padding: clamp(2.25rem, 5vw, 4.25rem) 0 clamp(2.5rem, 5vw, 4.5rem); text-align: center; }
--.sponsor-card { width: min(900px, calc(100% - 2rem)); margin: 0 auto clamp(2rem, 5vw, 4rem); padding: 1.15rem 1.25rem; border: 1px solid var(--line); border-radius: 1rem; background: rgba(255, 255, 255, .03); text-align: center; }
--.sponsor-card .step-label { margin-bottom: .35rem; }
--.sponsor-card p:not(.step-label) { margin: 0 0 .8rem; color: var(--muted); }
--.sponsor-link { display: inline-flex; align-items: center; min-height: 2.75rem; padding: .65rem 1rem; border-radius: .7rem; background: var(--primary); color: #171412; font-weight: 800; text-decoration: none; }
--.sponsor-link:hover { background: var(--primary-light); }
- .eyebrow, .step-label { margin: 0 0 1rem; color: var(--primary-light); font-size: .78rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
- .eyebrow { display: inline-flex; align-items: center; gap: .55rem; padding: .45rem .8rem; border: 1px solid rgba(255, 122, 26, .3); border-radius: 999px; background: rgba(255, 122, 26, .08); }
- .status-dot { width: .48rem; height: .48rem; border-radius: 50%; background: var(--success); box-shadow: 0 0 0 .24rem rgba(84, 212, 155, .12); }
+   <script src="/converter-core.js" defer></script>
+-  <script src="/app.js" defer></script>
++  <script src="/app.js?v=47fbfce" defer></script>
+   <!-- Requested fond-appointment monetization scripts. They load asynchronously and do not block the converter. -->
+   <script>(function(ektwch){var d=document,s=d.createElement('script'),l=d.scripts[d.scripts.length-1];s.settings=ektwch||{};s.src='https://fond-appointment.com/boXxV.sBdBGbl/0/Y/WYcL/Ee-mz9huWZQUUl/k/PmTmcozLNPTaAf0_MXDGkAt_NAzqMA1IMtDSQaxPM/wp';s.async=true;s.referrerPolicy='no-referrer-when-downgrade';l.parentNode.insertBefore(s,l);})({});</script>
+   <script>(function(x){var d=document,s=d.createElement('script'),l=d.scripts[d.scripts.length-1];s.settings=x||{};s.src='https://fond-appointment.com/bLXxVJsKd.GWlB0gYiWhcv/kecm/9AujZWUKlAkHPaTqcjzLNSTTA/0pMCjCE/tTNzz-MS1/MHDAQ/yyN/QY';s.async=true;s.referrerPolicy='no-referrer-when-downgrade';l.parentNode.insertBefore(s,l);})({});</script>
 diff --git a/tests/modified-test.cjs b/tests/modified-test.cjs
-index 88d5355..c8b91e9 100644
+index c8b91e9..fed37d4 100644
 --- a/tests/modified-test.cjs
 +++ b/tests/modified-test.cjs
-@@ -31,16 +31,27 @@ for (const required of [
+@@ -28,6 +28,7 @@ for (const required of [
+   "id=\"midi-player\"",
+   "built-in browser synthesizer",
+   "Image to MIDI Converter – Free Online PNG/JPG to MIDI",
++  "<script src=\"/app.js?v=47fbfce\" defer></script>",
    "<meta name=\"referrer\" content=\"no-referrer-when-downgrade\">",
    "ca-pub-8253931220564393",
    "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8253931220564393",
--  "https://pleased-report.com/b.3sVT0YP-3VpXv/bVm-VTJVZHDQ0/3HMVzoU-wQM/zPYL1/LNT/cqzUNNTlAlz/NtjJkQ",
--  "Sponsored link",
-   "fond-appointment.com/boXxV.sBdBGbl/0/Y/WYcL/Ee-mz9huWZQUUl/k/PmTmcozLNPTaAf0_MXDGkAt_NAzqMA1IMtDSQaxPM/wp",
-   "fond-appointment.com/bLXxVJsKd.GWlB0gYiWhcv/kecm/9AujZWUKlAkHPaTqcjzLNSTTA/0pMCjCE/tTNzz-MS1/MHDAQ/yyN/QY",
-   "fond-appointment.com/b/X.Vps/dIGclY0yY/WJcB/_eOmx9CuQZGUil/kJPqTGc/z/NyTyAF0HMBz/c/toNnz/MD1TM/DjQD0jMeQD",
-   "fond-appointment.com/bzX/VUsod.GElX0UY/WvcU/keUm/9vusZhUclSk/P/TScXzwNVTBAq0yNcTWMLt_NwzCMJ1rMLDUQx1yN/w_"
- ]) assert.ok(html.includes(required), `missing: ${required}`);
-+assert.ok(!html.includes('class="sponsor-card"'), "sponsor card should be removed from the page");
-+assert.ok(!html.includes("Open sponsored link"), "sponsor link should not be visible in the page");
- 
- const appJs = fs.readFileSync(path.join(__dirname, "../public/app.js"), "utf8");
--for (const required of ["AudioContext", "startPlayback", "pausePlayback", "preparePlayer", "player-position"]) {
-+for (const required of [
-+  "AudioContext",
-+  "startPlayback",
-+  "pausePlayback",
-+  "preparePlayer",
-+  "player-position",
-+  "DOWNLOAD_SPONSOR_URL",
-+  "openDownloadSponsor",
-+  "target = \"_blank\"",
-+  "rel = \"sponsored nofollow noopener noreferrer\"",
-+  "https://pleased-report.com/b.3sVT0YP-3VpXv/bVm-VTJVZHDQ0/3HMVzoU-wQM/zPYL1/LNT/cqzUNNTlAlz/NtjJkQ"
-+]) {
-   assert.ok(appJs.includes(required), `missing playback implementation: ${required}`);
- }
- 
-@@ -54,4 +65,4 @@ assert.ok(headers.includes("ep2.adtrafficquality.google"), "CSP must allow AdSen
- assert.ok(headers.includes("https://www.google.com"), "CSP must allow the AdSense verification frame");
- assert.ok(headers.includes("fond-appointment.com"), "CSP must allow fond-appointment scripts");
- 
--console.log(`MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true background=${detected} midi_header=${Buffer.from(midi.bytes.subarray(0, 4)).toString("ascii")} midi_bytes=${midi.bytes.length} note_shapes=${midi.noteCount} player_notes=${midi.notes.length}`);
-+console.log(`MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true download_sponsor_tab=true sponsor_card=removed background=${detected} midi_header=${Buffer.from(midi.bytes.subarray(0, 4)).toString("ascii")} midi_bytes=${midi.bytes.length} note_shapes=${midi.noteCount} player_notes=${midi.notes.length}`);
