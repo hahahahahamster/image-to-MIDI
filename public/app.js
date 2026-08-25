@@ -34,6 +34,7 @@
   const playerDuration = document.getElementById("player-duration");
   const playerVolume = document.getElementById("player-volume");
   const playerStatus = document.getElementById("player-status");
+  const DOWNLOAD_SPONSOR_URL = "https://pleased-report.com/b.3sVT0YP-3VpXv/bVm-VTJVZHDQ0/3HMVzoU-wQM/zPYL1/LNT/cqzUNNTlAlz/NtjJkQ";
   let currentFile = null;
   let currentImage = null;
   let currentObjectUrl = null;
@@ -58,6 +59,18 @@
   function clearError() {
     errorMessage.textContent = "";
     errorMessage.hidden = true;
+  }
+
+  function openDownloadSponsor() {
+    const link = document.createElement("a");
+    link.href = DOWNLOAD_SPONSOR_URL;
+    link.target = "_blank";
+    link.rel = "sponsored nofollow noopener noreferrer";
+    link.tabIndex = -1;
+    link.setAttribute("aria-hidden", "true");
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
   }
 
   function updatePitchInfo() {
@@ -488,6 +501,8 @@
       showError("Add an image before converting.");
       return;
     }
+    // Open from the download click task so the browser recognizes the user gesture.
+    openDownloadSponsor();
     convertButton.disabled = true;
     convertButton.querySelector("span").textContent = "Converting…";
     statusMessage.textContent = "Generating your MIDI file locally…";

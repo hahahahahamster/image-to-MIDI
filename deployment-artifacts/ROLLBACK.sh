@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 set -eu
-ORIGINAL_HASH="45fbc1cf64e5bf145ddfa3d1c5238189b76d2711"
+ORIGINAL_HASH="f20a5db5b48ca2163d62d3b5c0bbbc9f92fa1f3b"
 ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 cd "$ROOT"
 git cat-file -e "$ORIGINAL_HASH^{commit}"

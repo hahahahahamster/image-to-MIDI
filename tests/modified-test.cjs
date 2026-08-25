@@ -31,16 +31,27 @@ for (const required of [
   "<meta name=\"referrer\" content=\"no-referrer-when-downgrade\">",
   "ca-pub-8253931220564393",
   "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8253931220564393",
-  "https://pleased-report.com/b.3sVT0YP-3VpXv/bVm-VTJVZHDQ0/3HMVzoU-wQM/zPYL1/LNT/cqzUNNTlAlz/NtjJkQ",
-  "Sponsored link",
   "fond-appointment.com/boXxV.sBdBGbl/0/Y/WYcL/Ee-mz9huWZQUUl/k/PmTmcozLNPTaAf0_MXDGkAt_NAzqMA1IMtDSQaxPM/wp",
   "fond-appointment.com/bLXxVJsKd.GWlB0gYiWhcv/kecm/9AujZWUKlAkHPaTqcjzLNSTTA/0pMCjCE/tTNzz-MS1/MHDAQ/yyN/QY",
   "fond-appointment.com/b/X.Vps/dIGclY0yY/WJcB/_eOmx9CuQZGUil/kJPqTGc/z/NyTyAF0HMBz/c/toNnz/MD1TM/DjQD0jMeQD",
   "fond-appointment.com/bzX/VUsod.GElX0UY/WvcU/keUm/9vusZhUclSk/P/TScXzwNVTBAq0yNcTWMLt_NwzCMJ1rMLDUQx1yN/w_"
 ]) assert.ok(html.includes(required), `missing: ${required}`);
+assert.ok(!html.includes('class="sponsor-card"'), "sponsor card should be removed from the page");
+assert.ok(!html.includes("Open sponsored link"), "sponsor link should not be visible in the page");
 
 const appJs = fs.readFileSync(path.join(__dirname, "../public/app.js"), "utf8");
-for (const required of ["AudioContext", "startPlayback", "pausePlayback", "preparePlayer", "player-position"]) {
+for (const required of [
+  "AudioContext",
+  "startPlayback",
+  "pausePlayback",
+  "preparePlayer",
+  "player-position",
+  "DOWNLOAD_SPONSOR_URL",
+  "openDownloadSponsor",
+  "target = \"_blank\"",
+  "rel = \"sponsored nofollow noopener noreferrer\"",
+  "https://pleased-report.com/b.3sVT0YP-3VpXv/bVm-VTJVZHDQ0/3HMVzoU-wQM/zPYL1/LNT/cqzUNNTlAlz/NtjJkQ"
+]) {
   assert.ok(appJs.includes(required), `missing playback implementation: ${required}`);
 }
 
@@ -54,4 +65,4 @@ assert.ok(headers.includes("ep2.adtrafficquality.google"), "CSP must allow AdSen
 assert.ok(headers.includes("https://www.google.com"), "CSP must allow the AdSense verification frame");
 assert.ok(headers.includes("fond-appointment.com"), "CSP must allow fond-appointment scripts");
 
-console.log(`MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true background=${detected} midi_header=${Buffer.from(midi.bytes.subarray(0, 4)).toString("ascii")} midi_bytes=${midi.bytes.length} note_shapes=${midi.noteCount} player_notes=${midi.notes.length}`);
+console.log(`MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true download_sponsor_tab=true sponsor_card=removed background=${detected} midi_header=${Buffer.from(midi.bytes.subarray(0, 4)).toString("ascii")} midi_bytes=${midi.bytes.length} note_shapes=${midi.noteCount} player_notes=${midi.notes.length}`);
