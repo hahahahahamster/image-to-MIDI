@@ -3,12 +3,12 @@ Date: 2026-08-25
 
 CHANGED BRANCH/FIELD
 branch: main
-field: reduced navigation-to-title hero spacing, switched SEO/GEO URLs to the purchased custom domain, and verified browser MIDI playback on the custom domain
+field: reduced navigation-to-title hero spacing, switched SEO/GEO URLs to the purchased custom domain, verified browser MIDI playback, and added Google AdSense plus the requested sponsored direct URL
 original source commit: 45fbc1cf64e5bf145ddfa3d1c5238189b76d2711
 production project: image-to-midi-converter
 Cloudflare Pages free fallback: https://image-to-midi-converter.pages.dev/
 requested custom domain: https://img2midi.online/
-latest immutable deployment: https://9e133658.image-to-midi-converter.pages.dev/
+latest immutable deployment: https://5b2dad03.image-to-midi-converter.pages.dev/
 
 SPACING CHANGE
 public/styles.css .hero padding changed from clamp(4.5rem, 10vw, 8.5rem) 0 clamp(3rem, 7vw, 5rem) to clamp(2.25rem, 5vw, 4.25rem) 0 clamp(2.5rem, 5vw, 4.5rem). At a 1280px viewport, the deployed hero top padding is 64px; the measured navigation-bottom to h1-top gap is 149.671875px, with no horizontal overflow.
@@ -59,8 +59,8 @@ Restored behavior/status: original Flask app is present at the original commit; 
 
 DEPLOYMENT
 Exact auth command: npx --yes wrangler@latest whoami (Pages write session authenticated)
-Exact deploy command: npx --yes wrangler@latest pages deploy public --project-name=image-to-midi-converter --branch=main --commit-hash=45fbc1cf64e5bf145ddfa3d1c5238189b76d2711 --commit-message="Reduce hero spacing and point SEO to img2midi.online"
-Literal result: Deployment complete; https://9e133658.image-to-midi-converter.pages.dev
+Exact deploy command: npx --yes wrangler@latest pages deploy public --project-name=image-to-midi-converter --branch=main --commit-hash=b16b6a5 --commit-message="Allow AdSense traffic quality images"
+Literal result: Deployment complete; https://5b2dad03.image-to-midi-converter.pages.dev
 Exit status: 0
 
 PRODUCTION HTTP CHECK
@@ -95,18 +95,28 @@ Downloaded MIDI: bytes=1203 midi_header=4d546864
 Conversion status: Downloaded demo-heart-to-midi.mid with 144 note shapes.
 Playback state after Play: button=Pause; position=434; elapsed=0:10; duration=0:25; status="Playing 144 note shapes with the browser synth."
 Spacing/overflow eval: {"gap_px":149.671875,"hero_padding_top":"64px","horizontal_overflow":false,"scroll_width":1280,"viewport_width":1280}
-Browser console entries: 2 CSP blocks for Cloudflare Insights beacon; no application runtime errors.
+Browser console entries: 0 errors, 0 warnings after AdSense/CSP update.
 Exit status: 0
 
 PLAYBACK RESULT
 Cloudflare Pages supports playback because it is entirely client-side Web Audio API. The player provides Play/Pause, Stop, seek position, duration, and volume controls after conversion; the .mid download remains available.
 
 GITHUB
-Source commit: 552e8fd Reduce hero spacing and use custom domain SEO URLs
-Artifact verification record: committed on main after the source commit
+Source commits: 552e8fd (spacing/domain) and 94f24ae (AdSense/sponsored link)
+Final CSP/deployment commits: 26a36d2, f45d824, bbd785a, b16b6a5
 Exact command: git push origin main (using the stored GitHub credential for hahahahahamster)
-Literal result: source commit 552e8fd and verification record pushed to main
+Literal result: AdSense/sponsored-link and CSP commits pushed to main after source commit 552e8fd
 Exit status: 0
 GitHub repository: https://github.com/hahahahahamster/image-to-MIDI (main)
 All source changes, playback functionality, SEO/GEO assets, and verification artifacts are pushed to https://github.com/hahahahahamster/image-to-MIDI on main.
+
+
+ADSENSE AND SPONSORED URL
+Exact head code added:
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8253931220564393" crossorigin="anonymous"></script>
+<meta name="google-adsense-account" content="ca-pub-8253931220564393">
+The requested pleased-report URL is exposed as an explicit, user-initiated sponsored link with target="_blank" and rel="sponsored nofollow noopener noreferrer"; it is not auto-opened or hidden.
+CSP updated for Google AdSense, SODAR, Cloudflare Insights, and traffic-quality endpoints. Production browser console result after the final CSP: 0 errors, 0 warnings.
+Production HTML check: status=200; adsense_script=true; sponsored_url=true; canonical=https://img2midi.online/.
+
 
