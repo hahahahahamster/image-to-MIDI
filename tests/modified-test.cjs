@@ -27,7 +27,11 @@ for (const required of [
   "entire conversion runs locally in your browser",
   "id=\"midi-player\"",
   "built-in browser synthesizer",
-  "Image to MIDI Converter – Free Online PNG/JPG to MIDI"
+  "Image to MIDI Converter – Free Online PNG/JPG to MIDI",
+  "ca-pub-8253931220564393",
+  "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8253931220564393",
+  "https://pleased-report.com/b.3sVT0YP-3VpXv/bVm-VTJVZHDQ0/3HMVzoU-wQM/zPYL1/LNT/cqzUNNTlAlz/NtjJkQ",
+  "Sponsored link"
 ]) assert.ok(html.includes(required), `missing: ${required}`);
 
 const appJs = fs.readFileSync(path.join(__dirname, "../public/app.js"), "utf8");
@@ -38,5 +42,7 @@ for (const required of ["AudioContext", "startPlayback", "pausePlayback", "prepa
 for (const file of ["robots.txt", "sitemap.xml", "llms.txt", "site.webmanifest", "og-image.png", "_headers"]) {
   assert.ok(fs.existsSync(path.join(__dirname, "../public", file)), `missing public/${file}`);
 }
+const headers = fs.readFileSync(path.join(__dirname, "../public/_headers"), "utf8");
+assert.ok(headers.includes("pagead2.googlesyndication.com"), "CSP must allow Google AdSense");
 
 console.log(`MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true background=${detected} midi_header=${Buffer.from(midi.bytes.subarray(0, 4)).toString("ascii")} midi_bytes=${midi.bytes.length} note_shapes=${midi.noteCount} player_notes=${midi.notes.length}`);
