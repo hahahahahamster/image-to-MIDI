@@ -188,3 +188,22 @@ Exit status: 0
 IMPLEMENTATION
 public/app.js opens the supplied sponsored URL with a transient anchor using target="_blank" and rel="sponsored nofollow noopener noreferrer" before the async conversion delay, preserving the browser user gesture. public/index.html no longer renders the sponsor card. public/styles.css no longer contains sponsor-card or sponsor-link rules. The downloaded .mid and Web Audio player remain in the same submit handler.
 
+DEPLOYMENT
+Exact auth command: npx --yes wrangler@latest whoami
+Exact deploy command: npx --yes wrangler@latest pages deploy public --project-name=image-to-midi-converter --branch=main --commit-hash=dd1a39c --commit-message="Open sponsor link on MIDI download"
+Literal result: Deployment complete; https://c0b5948a.image-to-midi-converter.pages.dev
+Exit status: 0
+
+PRODUCTION HTTP CHECK
+Exact command: PowerShell Invoke-WebRequest checks against https://c0b5948a.image-to-midi-converter.pages.dev/ and https://img2midi.online/
+Exact input: no stdin.
+Literal output/result:
+https://c0b5948a.image-to-midi-converter.pages.dev/ status=200 bytes=22219 sponsorCard=False sponsorText=False downloadButton=True appScript=True
+https://img2midi.online/ status=200 bytes=22578 sponsorCard=False sponsorText=False downloadButton=True appScript=True
+Exit status: 0
+
+GITHUB
+Exact command: git push origin main
+Literal result: f20a5db..dd1a39c main -> main
+Exit status: 0
+
