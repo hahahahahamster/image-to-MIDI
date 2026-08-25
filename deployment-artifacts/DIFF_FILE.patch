@@ -1,24 +1,24 @@
 diff --git a/public/_headers b/public/_headers
-index 4fc0512..6900f89 100644
+index 6900f89..75e3723 100644
 --- a/public/_headers
 +++ b/public/_headers
 @@ -3,7 +3,7 @@
    X-Frame-Options: DENY
    Referrer-Policy: strict-origin-when-cross-origin
    Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
--  Content-Security-Policy: default-src 'self'; img-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net blob: data:; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net; connect-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net; frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
-+  Content-Security-Policy: default-src 'self'; img-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net blob: data:; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://static.cloudflareinsights.com; connect-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://ep1.adtrafficquality.google https://static.cloudflareinsights.com; frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+-  Content-Security-Policy: default-src 'self'; img-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net blob: data:; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://static.cloudflareinsights.com; connect-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://ep1.adtrafficquality.google https://static.cloudflareinsights.com; frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
++  Content-Security-Policy: default-src 'self'; img-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net blob: data:; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://static.cloudflareinsights.com https://ep2.adtrafficquality.google; connect-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://ep1.adtrafficquality.google https://static.cloudflareinsights.com https://cloudflareinsights.com; frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
    X-Robots-Tag: all
  
  /*.js
 diff --git a/tests/modified-test.cjs b/tests/modified-test.cjs
-index 0a78f2a..b7bee74 100644
+index b7bee74..549c8e4 100644
 --- a/tests/modified-test.cjs
 +++ b/tests/modified-test.cjs
-@@ -44,5 +44,6 @@ for (const file of ["robots.txt", "sitemap.xml", "llms.txt", "site.webmanifest",
- }
+@@ -45,5 +45,6 @@ for (const file of ["robots.txt", "sitemap.xml", "llms.txt", "site.webmanifest",
  const headers = fs.readFileSync(path.join(__dirname, "../public/_headers"), "utf8");
  assert.ok(headers.includes("pagead2.googlesyndication.com"), "CSP must allow Google AdSense");
-+assert.ok(headers.includes("ep1.adtrafficquality.google"), "CSP must allow AdSense traffic quality");
+ assert.ok(headers.includes("ep1.adtrafficquality.google"), "CSP must allow AdSense traffic quality");
++assert.ok(headers.includes("ep2.adtrafficquality.google"), "CSP must allow AdSense SODAR");
  
  console.log(`MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true background=${detected} midi_header=${Buffer.from(midi.bytes.subarray(0, 4)).toString("ascii")} midi_bytes=${midi.bytes.length} note_shapes=${midi.noteCount} player_notes=${midi.notes.length}`);

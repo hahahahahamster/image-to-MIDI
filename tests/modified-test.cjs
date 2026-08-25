@@ -45,5 +45,6 @@ for (const file of ["robots.txt", "sitemap.xml", "llms.txt", "site.webmanifest",
 const headers = fs.readFileSync(path.join(__dirname, "../public/_headers"), "utf8");
 assert.ok(headers.includes("pagead2.googlesyndication.com"), "CSP must allow Google AdSense");
 assert.ok(headers.includes("ep1.adtrafficquality.google"), "CSP must allow AdSense traffic quality");
+assert.ok(headers.includes("ep2.adtrafficquality.google"), "CSP must allow AdSense SODAR");
 
 console.log(`MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true background=${detected} midi_header=${Buffer.from(midi.bytes.subarray(0, 4)).toString("ascii")} midi_bytes=${midi.bytes.length} note_shapes=${midi.noteCount} player_notes=${midi.notes.length}`);
