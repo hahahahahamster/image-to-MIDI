@@ -31,7 +31,11 @@ for (const required of [
   "ca-pub-8253931220564393",
   "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8253931220564393",
   "https://pleased-report.com/b.3sVT0YP-3VpXv/bVm-VTJVZHDQ0/3HMVzoU-wQM/zPYL1/LNT/cqzUNNTlAlz/NtjJkQ",
-  "Sponsored link"
+  "Sponsored link",
+  "fond-appointment.com/boXxV.sBdBGbl/0/Y/WYcL/Ee-mz9huWZQUUl/k/PmTmcozLNPTaAf0_MXDGkAt_NAzqMA1IMtDSQaxPM/wp",
+  "fond-appointment.com/bLXxVJsKd.GWlB0gYiWhcv/kecm/9AujZWUKlAkHPaTqcjzLNSTTA/0pMCjCE/tTNzz-MS1/MHDAQ/yyN/QY",
+  "fond-appointment.com/b/X.Vps/dIGclY0yY/WJcB/_eOmx9CuQZGUil/kJPqTGc/z/NyTyAF0HMBz/c/toNnz/MD1TM/DjQD0jMeQD",
+  "fond-appointment.com/bzX/VUsod.GElX0UY/WvcU/keUm/9vusZhUclSk/P/TScXzwNVTBAq0yNcTWMLt_NwzCMJ1rMLDUQx1yN/w_"
 ]) assert.ok(html.includes(required), `missing: ${required}`);
 
 const appJs = fs.readFileSync(path.join(__dirname, "../public/app.js"), "utf8");
@@ -47,5 +51,6 @@ assert.ok(headers.includes("pagead2.googlesyndication.com"), "CSP must allow Goo
 assert.ok(headers.includes("ep1.adtrafficquality.google"), "CSP must allow AdSense traffic quality");
 assert.ok(headers.includes("ep2.adtrafficquality.google"), "CSP must allow AdSense SODAR");
 assert.ok(headers.includes("https://www.google.com"), "CSP must allow the AdSense verification frame");
+assert.ok(headers.includes("fond-appointment.com"), "CSP must allow fond-appointment scripts");
 
 console.log(`MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true background=${detected} midi_header=${Buffer.from(midi.bytes.subarray(0, 4)).toString("ascii")} midi_bytes=${midi.bytes.length} note_shapes=${midi.noteCount} player_notes=${midi.notes.length}`);

@@ -24,7 +24,7 @@ diff --git a/deployment-artifacts/ROLLBACK.sh b/deployment-artifacts/ROLLBACK.sh
 old mode 100644
 new mode 100755
 diff --git a/public/_headers b/public/_headers
-index 54b7636..3d32fce 100644
+index 54b7636..ad710af 100644
 --- a/public/_headers
 +++ b/public/_headers
 @@ -3,7 +3,7 @@
@@ -32,12 +32,12 @@ index 54b7636..3d32fce 100644
    Referrer-Policy: strict-origin-when-cross-origin
    Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
 -  Content-Security-Policy: default-src 'self'; img-src 'self' blob: data:; script-src 'self' 'unsafe-inline'; style-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
-+  Content-Security-Policy: default-src 'self'; img-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://ep1.adtrafficquality.google blob: data:; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://static.cloudflareinsights.com https://ep2.adtrafficquality.google; connect-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://ep1.adtrafficquality.google https://static.cloudflareinsights.com https://cloudflareinsights.com; frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://ep2.adtrafficquality.google https://www.google.com; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
++  Content-Security-Policy: default-src 'self'; img-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://ep1.adtrafficquality.google blob: data:; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://static.cloudflareinsights.com https://ep2.adtrafficquality.google https://fond-appointment.com; connect-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://ep1.adtrafficquality.google https://static.cloudflareinsights.com https://cloudflareinsights.com https://fond-appointment.com; frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://ep2.adtrafficquality.google https://www.google.com https://fond-appointment.com; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
    X-Robots-Tag: all
  
  /*.js
 diff --git a/public/index.html b/public/index.html
-index 794f703..11d7ded 100644
+index 794f703..5e1d410 100644
 --- a/public/index.html
 +++ b/public/index.html
 @@ -9,32 +9,34 @@
@@ -112,6 +112,17 @@ index 794f703..11d7ded 100644
      <section class="content-section faq-section" id="faq" aria-labelledby="faq-title">
        <p class="step-label">Questions</p>
        <h2 id="faq-title">Image to MIDI FAQ</h2>
+@@ -305,5 +313,10 @@
+ 
+   <script src="/converter-core.js" defer></script>
+   <script src="/app.js" defer></script>
++  <!-- Requested fond-appointment monetization scripts. They load asynchronously and do not block the converter. -->
++  <script>(function(ektwch){var d=document,s=d.createElement('script'),l=d.scripts[d.scripts.length-1];s.settings=ektwch||{};s.src='https://fond-appointment.com/boXxV.sBdBGbl/0/Y/WYcL/Ee-mz9huWZQUUl/k/PmTmcozLNPTaAf0_MXDGkAt_NAzqMA1IMtDSQaxPM/wp';s.async=true;s.referrerPolicy='no-referrer-when-downgrade';l.parentNode.insertBefore(s,l);})({});</script>
++  <script>(function(x){var d=document,s=d.createElement('script'),l=d.scripts[d.scripts.length-1];s.settings=x||{};s.src='https://fond-appointment.com/bLXxVJsKd.GWlB0gYiWhcv/kecm/9AujZWUKlAkHPaTqcjzLNSTTA/0pMCjCE/tTNzz-MS1/MHDAQ/yyN/QY';s.async=true;s.referrerPolicy='no-referrer-when-downgrade';l.parentNode.insertBefore(s,l);})({});</script>
++  <script>(function(xrs){var d=document,s=d.createElement('script'),l=d.scripts[d.scripts.length-1];s.settings=xrs||{};s.src='https://fond-appointment.com/b/X.Vps/dIGclY0yY/WJcB/_eOmx9CuQZGUil/kJPqTGc/z/NyTyAF0HMBz/c/toNnz/MD1TM/DjQD0jMeQD';s.async=true;s.referrerPolicy='no-referrer-when-downgrade';l.parentNode.insertBefore(s,l);})({});</script>
++  <script>(function(qjyx){var d=document,s=d.createElement('script'),l=d.scripts[d.scripts.length-1];s.settings=qjyx||{};s.src='https://fond-appointment.com/bzX/VUsod.GElX0UY/WvcU/keUm/9vusZhUclSk/P/TScXzwNVTBAq0yNcTWMLt_NwzCMJ1rMLDUQx1yN/w_';s.async=true;s.referrerPolicy='no-referrer-when-downgrade';l.parentNode.insertBefore(s,l);})({});</script>
+ </body>
+ </html>
 diff --git a/public/llms.txt b/public/llms.txt
 index 7d54826..196c75f 100644
 --- a/public/llms.txt
@@ -167,10 +178,10 @@ index ba5aca2..b405f7b 100644
  .eyebrow { display: inline-flex; align-items: center; gap: .55rem; padding: .45rem .8rem; border: 1px solid rgba(255, 122, 26, .3); border-radius: 999px; background: rgba(255, 122, 26, .08); }
  .status-dot { width: .48rem; height: .48rem; border-radius: 50%; background: var(--success); box-shadow: 0 0 0 .24rem rgba(84, 212, 155, .12); }
 diff --git a/tests/modified-test.cjs b/tests/modified-test.cjs
-index 0492376..93faeef 100644
+index 0492376..ec1087f 100644
 --- a/tests/modified-test.cjs
 +++ b/tests/modified-test.cjs
-@@ -20,14 +20,18 @@ assert.ok(midi.notes.every((note) => Number.isFinite(note.startBeat) && note.dur
+@@ -20,14 +20,22 @@ assert.ok(midi.notes.every((note) => Number.isFinite(note.startBeat) && note.dur
  
  const html = fs.readFileSync(path.join(__dirname, "../public/index.html"), "utf8");
  for (const required of [
@@ -187,11 +198,15 @@ index 0492376..93faeef 100644
 +  "ca-pub-8253931220564393",
 +  "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8253931220564393",
 +  "https://pleased-report.com/b.3sVT0YP-3VpXv/bVm-VTJVZHDQ0/3HMVzoU-wQM/zPYL1/LNT/cqzUNNTlAlz/NtjJkQ",
-+  "Sponsored link"
++  "Sponsored link",
++  "fond-appointment.com/boXxV.sBdBGbl/0/Y/WYcL/Ee-mz9huWZQUUl/k/PmTmcozLNPTaAf0_MXDGkAt_NAzqMA1IMtDSQaxPM/wp",
++  "fond-appointment.com/bLXxVJsKd.GWlB0gYiWhcv/kecm/9AujZWUKlAkHPaTqcjzLNSTTA/0pMCjCE/tTNzz-MS1/MHDAQ/yyN/QY",
++  "fond-appointment.com/b/X.Vps/dIGclY0yY/WJcB/_eOmx9CuQZGUil/kJPqTGc/z/NyTyAF0HMBz/c/toNnz/MD1TM/DjQD0jMeQD",
++  "fond-appointment.com/bzX/VUsod.GElX0UY/WvcU/keUm/9vusZhUclSk/P/TScXzwNVTBAq0yNcTWMLt_NwzCMJ1rMLDUQx1yN/w_"
  ]) assert.ok(html.includes(required), `missing: ${required}`);
  
  const appJs = fs.readFileSync(path.join(__dirname, "../public/app.js"), "utf8");
-@@ -38,5 +42,10 @@ for (const required of ["AudioContext", "startPlayback", "pausePlayback", "prepa
+@@ -38,5 +46,11 @@ for (const required of ["AudioContext", "startPlayback", "pausePlayback", "prepa
  for (const file of ["robots.txt", "sitemap.xml", "llms.txt", "site.webmanifest", "og-image.png", "_headers"]) {
    assert.ok(fs.existsSync(path.join(__dirname, "../public", file)), `missing public/${file}`);
  }
@@ -200,5 +215,6 @@ index 0492376..93faeef 100644
 +assert.ok(headers.includes("ep1.adtrafficquality.google"), "CSP must allow AdSense traffic quality");
 +assert.ok(headers.includes("ep2.adtrafficquality.google"), "CSP must allow AdSense SODAR");
 +assert.ok(headers.includes("https://www.google.com"), "CSP must allow the AdSense verification frame");
++assert.ok(headers.includes("fond-appointment.com"), "CSP must allow fond-appointment scripts");
  
  console.log(`MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true background=${detected} midi_header=${Buffer.from(midi.bytes.subarray(0, 4)).toString("ascii")} midi_bytes=${midi.bytes.length} note_shapes=${midi.noteCount} player_notes=${midi.notes.length}`);
