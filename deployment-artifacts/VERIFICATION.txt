@@ -82,4 +82,11 @@ PLAYBACK RESULT
 Cloudflare Pages supports playback because it is entirely client-side Web Audio API. The player provides Play/Pause, Stop, seek position, duration, and volume controls after conversion; the .mid download remains available.
 
 GITHUB
-Pending final commit for this request; all source changes and updated artifacts will be pushed to https://github.com/hahahahahamster/image-to-MIDI on main after the custom-domain DNS step is complete.
+Commit: 552e8fd Reduce hero spacing and use custom domain SEO URLs
+Exact command: git push origin main (using the stored GitHub credential for hahahahahamster)
+Literal result: 962f4bf..552e8fd  main -> main
+Exit status: 0
+GitHub commit: https://github.com/hahahahahamster/image-to-MIDI/commit/552e8fd
+All source changes and updated artifacts are pushed to https://github.com/hahahahahamster/image-to-MIDI on main. The custom-domain DNS record remains the only pending Cloudflare-side step.
+
+
