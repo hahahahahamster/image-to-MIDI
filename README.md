@@ -2,7 +2,7 @@
 
 A free web application that converts image shapes into playable MIDI notes. The Cloudflare Pages version processes images entirely in the browser, previews the generated sequence with a built-in Web Audio synth, and downloads a Standard MIDI File.
 
-**Live site:** https://image-to-midi-converter.pages.dev/
+**Live site:** https://img2midi.online/
 
 ## Features
 
@@ -32,7 +32,7 @@ npx wrangler whoami
 npx wrangler pages deploy public --project-name=image-to-midi-converter --branch=main
 ```
 
-Cloudflare assigns the free domain `https://image-to-midi-converter.pages.dev/`.
+Cloudflare Pages serves the project at the custom domain `https://img2midi.online/` and retains the free Pages domain as a fallback.
 
 ### Browser playback
 

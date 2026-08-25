@@ -20,7 +20,7 @@ assert.ok(midi.notes.every((note) => Number.isFinite(note.startBeat) && note.dur
 
 const html = fs.readFileSync(path.join(__dirname, "../public/index.html"), "utf8");
 for (const required of [
-  "<link rel=\"canonical\" href=\"https://image-to-midi-converter.pages.dev/\">",
+  "<link rel=\"canonical\" href=\"https://img2midi.online/\">",
   "\"@type\": \"WebApplication\"",
   "\"@type\": \"HowTo\"",
   "\"@type\": \"FAQPage\"",

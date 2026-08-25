@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://image-to-midi-converter.pages.dev/sitemap.xml
+Sitemap: https://img2midi.online/sitemap.xml

@@ -2,7 +2,7 @@
 
 > A free, private, browser-based tool that maps image geometry to MIDI note events, previews them with a built-in synth, and downloads a Standard MIDI File.
 
-Canonical URL: https://image-to-midi-converter.pages.dev/
+Canonical URL: https://img2midi.online/
 Source: https://github.com/hahahahahamster/image-to-MIDI
 
 ## Primary capability
