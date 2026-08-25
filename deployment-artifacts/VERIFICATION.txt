@@ -2,8 +2,8 @@ Image to MIDI — Cloudflare Pages deployment, spacing, SEO/GEO, and playback ve
 Date: 2026-08-25
 
 CHANGED BRANCH/FIELD
-branch: main (working tree based on GitHub commit 962f4bfa00cf7c311ae75bde25abca5ddcae17cb)
-field: reduced navigation-to-title hero spacing and switched SEO/GEO URLs to the purchased custom domain; existing browser MIDI playback remains enabled
+branch: main (final GitHub commit: 80f8fc00da068297d4287e6669c9ab066eb36d78)
+field: reduced navigation-to-title hero spacing, switched SEO/GEO URLs to the purchased custom domain, and verified browser MIDI playback on the custom domain
 original source commit: 45fbc1cf64e5bf145ddfa3d1c5238189b76d2711
 production project: image-to-midi-converter
 Cloudflare Pages free fallback: https://image-to-midi-converter.pages.dev/
@@ -11,7 +11,7 @@ requested custom domain: https://img2midi.online/
 latest immutable deployment: https://9e133658.image-to-midi-converter.pages.dev/
 
 SPACING CHANGE
-public/styles.css .hero padding changed from clamp(4.5rem, 10vw, 8.5rem) 0 clamp(3rem, 7vw, 5rem) to clamp(2.25rem, 5vw, 4.25rem) 0 clamp(2.5rem, 5vw, 4.5rem). This reduces the top gap by roughly 50% at common desktop widths while retaining responsive spacing.
+public/styles.css .hero padding changed from clamp(4.5rem, 10vw, 8.5rem) 0 clamp(3rem, 7vw, 5rem) to clamp(2.25rem, 5vw, 4.25rem) 0 clamp(2.5rem, 5vw, 4.5rem). At a 1280px viewport, the deployed hero top padding is 64px; the measured navigation-bottom to h1-top gap is 149.671875px, with no horizontal overflow.
 
 SEO/GEO DOMAIN CHANGE
 public/index.html, public/robots.txt, public/sitemap.xml, public/llms.txt, README.md, and tests/modified-test.cjs now use https://img2midi.online/ for canonical, Open Graph, Twitter, JSON-LD, sitemap, robots, llms, and documentation URLs.
@@ -58,35 +58,54 @@ Exit status: 0
 Restored behavior/status: original Flask app is present at the original commit; GET / returns 200 and the rollback copy has no Cloudflare-only public/index.html or package.json.
 
 DEPLOYMENT
-Exact auth command: npx --yes wrangler@latest whoami (previously authenticated Pages write session; deploy itself succeeded)
+Exact auth command: npx --yes wrangler@latest whoami (Pages write session authenticated)
 Exact deploy command: npx --yes wrangler@latest pages deploy public --project-name=image-to-midi-converter --branch=main --commit-hash=45fbc1cf64e5bf145ddfa3d1c5238189b76d2711 --commit-message="Reduce hero spacing and point SEO to img2midi.online"
 Literal result: Deployment complete; https://9e133658.image-to-midi-converter.pages.dev
 Exit status: 0
 
 PRODUCTION HTTP CHECK
-Exact command: PowerShell Invoke-WebRequest checks against https://9e133658.image-to-midi-converter.pages.dev/, https://image-to-midi-converter.pages.dev/, and https://img2midi.online/.
+Exact command: PowerShell Invoke-WebRequest checks against https://9e133658.image-to-midi-converter.pages.dev/, https://image-to-midi-converter.pages.dev/, https://img2midi.online/, plus Cloudflare Pages domain API and Cloudflare DNS-over-HTTPS checks.
 Literal output/result:
 https://9e133658.image-to-midi-converter.pages.dev/ status=200 bytes=20126 canonical=https://img2midi.online/ h1=Turn any image into <span>MIDI notes</span>
 https://image-to-midi-converter.pages.dev/ status=200 bytes=20126 canonical=https://img2midi.online/ h1=Turn any image into <span>MIDI notes</span>
-https://img2midi.online/ SSL connection could not be established because its Pages custom-domain CNAME is not yet present.
-Exit status: immutable and fallback Pages URLs 0; custom-domain TLS check pending DNS.
+https://img2midi.online/ status=200 bytes=20485 title=Image to MIDI Converter – Free Online PNG/JPG to MIDI canonical=https://img2midi.online/
+https://img2midi.online/robots.txt status=200 bytes=1905
+https://img2midi.online/sitemap.xml status=200 bytes=267
+https://img2midi.online/llms.txt status=200 bytes=1830
+https://img2midi.online/og-image.png status=200 bytes=44215
+Pages API: status=active; verification_data.status=active; verification_data.error_message=null
+DNS-over-HTTPS: img2midi.online A answers 172.67.202.226, 104.21.42.65 (Cloudflare proxied CNAME flattening)
+Exit status: 0
 
 CUSTOM DOMAIN DNS STATUS
 Cloudflare account: d3761ef5de20d0cb6ddedba97acc22f7
 Zone: img2midi.online (active; zone id 213eb4db30badc0c40a4daf5d7b1d55b)
 Pages custom-domain record id: 23c0df7b-5780-45b2-b768-a0932180a416
-API result: status=pending; verification_data.status=pending; verification_data.error_message=CNAME record not set.
-Required DNS record: CNAME img2midi.online -> image-to-midi-converter.pages.dev (proxied/enabled).
+Final API result: status=active; verification_data.status=active; verification_data.error_message=null.
+Required record observed through public DNS: CNAME img2midi.online -> image-to-midi-converter.pages.dev, proxied/enabled; public response is flattened to Cloudflare A records.
+
+PRODUCTION BROWSER CHECK
+Exact command: npx --yes --package @playwright/cli playwright-cli open https://img2midi.online/; snapshot; click "Use demo pattern"; snapshot; click "Convert and download"; snapshot; click "Play MIDI preview"; snapshot; eval spacing/overflow metrics.
+Exact input: generated 720x420 demo-heart.png; defaults 200 columns, 88 pitch rows, lowest note 36, 120 BPM, auto background.
+Literal output/result:
+Page URL=https://img2midi.online/
+Page title=Image to MIDI Converter – Free Online PNG/JPG to MIDI
+Download event: demo-heart-to-midi.mid -> .playwright-cli/demo-heart-to-midi.mid
+Downloaded MIDI: bytes=1203 midi_header=4d546864
+Conversion status: Downloaded demo-heart-to-midi.mid with 144 note shapes.
+Playback state after Play: button=Pause; position=434; elapsed=0:10; duration=0:25; status="Playing 144 note shapes with the browser synth."
+Spacing/overflow eval: {"gap_px":149.671875,"hero_padding_top":"64px","horizontal_overflow":false,"scroll_width":1280,"viewport_width":1280}
+Browser console entries: 2 CSP blocks for Cloudflare Insights beacon; no application runtime errors.
+Exit status: 0
 
 PLAYBACK RESULT
 Cloudflare Pages supports playback because it is entirely client-side Web Audio API. The player provides Play/Pause, Stop, seek position, duration, and volume controls after conversion; the .mid download remains available.
 
 GITHUB
-Commit: 552e8fd Reduce hero spacing and use custom domain SEO URLs
+Source commit: 552e8fd Reduce hero spacing and use custom domain SEO URLs
+Artifact verification commit: 80f8fc00da068297d4287e6669c9ab066eb36d78 Record custom domain verification status
 Exact command: git push origin main (using the stored GitHub credential for hahahahahamster)
-Literal result: 962f4bf..552e8fd  main -> main
+Literal result: 552e8fd..80f8fc0  main -> main
 Exit status: 0
-GitHub commit: https://github.com/hahahahahamster/image-to-MIDI/commit/552e8fd
-All source changes and updated artifacts are pushed to https://github.com/hahahahahamster/image-to-MIDI on main. The custom-domain DNS record remains the only pending Cloudflare-side step.
-
-
+GitHub commit: https://github.com/hahahahahamster/image-to-MIDI/commit/80f8fc00da068297d4287e6669c9ab066eb36d78
+All source changes, playback functionality, SEO/GEO assets, and verification artifacts are pushed to https://github.com/hahahahahamster/image-to-MIDI on main.
