@@ -11,10 +11,10 @@ index 7ddb3ce..c7e2f95 100755
  cd "$ROOT"
  git cat-file -e "$ORIGINAL_HASH^{commit}"
 diff --git a/deployment-artifacts/VERIFICATION.txt b/deployment-artifacts/VERIFICATION.txt
-index 754289a..74542fe 100644
+index 754289a..1b6aa6d 100644
 --- a/deployment-artifacts/VERIFICATION.txt
 +++ b/deployment-artifacts/VERIFICATION.txt
-@@ -207,3 +207,53 @@ Exact command: git push origin main
+@@ -207,3 +207,67 @@ Exact command: git push origin main
  Literal result: f20a5db..dd1a39c main -> main
  Exit status: 0
  
@@ -67,6 +67,20 @@ index 754289a..74542fe 100644
 +Literal output/result:
 +unversioned app.js sponsorFunction=False; cache-busted app.js sponsorFunction=True; unversioned Cache-Control=public, max-age=604800.
 +Result: the versioned script reference is required to deliver the new download handler through the configured cache policy.
++
++DEPLOYMENT
++Exact auth command: npx --yes wrangler@latest whoami
++Exact deploy command: npx --yes wrangler@latest pages deploy public --project-name=image-to-midi-converter --branch=main --commit-hash=0e26139 --commit-message="Bust cached download script after deployment"
++Literal result: Deployment complete; https://572dd4cd.image-to-midi-converter.pages.dev
++Exit status: 0
++
++PRODUCTION CACHE-BUST CHECK
++Exact command: PowerShell Invoke-WebRequest checks against https://img2midi.online/, https://img2midi.online/app.js?v=47fbfce, and https://572dd4cd.image-to-midi-converter.pages.dev/
++Literal output/result:
++https://img2midi.online/ status=200 bytes=22587 sponsorCard=False sponsorText=False versionedScript=True
++https://img2midi.online/app.js?v=47fbfce status=200 bytes=23558 sponsorFunction=True targetBlank=True sponsorUrl=True
++https://572dd4cd.image-to-midi-converter.pages.dev/ status=200 immutableVersionedScript=True sponsorCard=False
++Exit status: 0
 +
 diff --git a/public/index.html b/public/index.html
 index 7a88664..cfbdd2c 100644
