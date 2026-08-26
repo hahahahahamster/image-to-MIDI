@@ -28,7 +28,7 @@ for (const required of [
   "id=\"midi-player\"",
   "built-in browser synthesizer",
   "Image to MIDI Converter – Free Online PNG/JPG to MIDI",
-  "<script src=\"/app.js?v=47fbfce\" defer></script>",
+  "<script src=\"/app.js?v=player-20260826\" defer></script>",
   "<meta name=\"referrer\" content=\"no-referrer-when-downgrade\">",
   "ca-pub-8253931220564393",
   "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8253931220564393",
@@ -60,10 +60,11 @@ for (const file of ["robots.txt", "sitemap.xml", "llms.txt", "site.webmanifest",
   assert.ok(fs.existsSync(path.join(__dirname, "../public", file)), `missing public/${file}`);
 }
 const headers = fs.readFileSync(path.join(__dirname, "../public/_headers"), "utf8");
+assert.ok(headers.includes("/app.js\n  Cache-Control: no-cache, must-revalidate"), "app.js cache must revalidate so player fixes reach visitors");
 assert.ok(headers.includes("pagead2.googlesyndication.com"), "CSP must allow Google AdSense");
 assert.ok(headers.includes("ep1.adtrafficquality.google"), "CSP must allow AdSense traffic quality");
 assert.ok(headers.includes("ep2.adtrafficquality.google"), "CSP must allow AdSense SODAR");
 assert.ok(headers.includes("https://www.google.com"), "CSP must allow the AdSense verification frame");
 assert.ok(headers.includes("fond-appointment.com"), "CSP must allow fond-appointment scripts");
 
-console.log(`MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true download_sponsor_tab=true sponsor_card=removed background=${detected} midi_header=${Buffer.from(midi.bytes.subarray(0, 4)).toString("ascii")} midi_bytes=${midi.bytes.length} note_shapes=${midi.noteCount} player_notes=${midi.notes.length}`);
+console.log(`MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true player_reveal=true player_scroll=true app_cache_revalidate=true download_sponsor_tab=true sponsor_card=removed background=${detected} midi_header=${Buffer.from(midi.bytes.subarray(0, 4)).toString("ascii")} midi_bytes=${midi.bytes.length} note_shapes=${midi.noteCount} player_notes=${midi.notes.length}`);

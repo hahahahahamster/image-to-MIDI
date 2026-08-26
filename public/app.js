@@ -295,10 +295,12 @@
       durationSeconds: conversion.midi.durationBeats * secondsPerBeat
     };
     midiPlayer.hidden = false;
+    midiPlayer.removeAttribute("hidden");
     playerStatus.textContent = playerData.notes.length
       ? `MIDI ready: ${playerData.notes.length.toLocaleString()} note shapes. Select Play to preview.`
       : "The generated MIDI contains no notes. Adjust the image or threshold and convert again.";
     updatePlayerPosition(0);
+    requestAnimationFrame(() => midiPlayer.scrollIntoView({ behavior: "smooth", block: "nearest" }));
   }
 
   function invalidatePlayer() {

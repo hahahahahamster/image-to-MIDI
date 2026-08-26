@@ -271,3 +271,46 @@ https://img2midi.online/app.js?v=47fbfce status=200 bytes=23558 sponsorFunction=
 https://572dd4cd.image-to-midi-converter.pages.dev/ status=200 immutableVersionedScript=True sponsorCard=False
 Exit status: 0
 
+FOLLOW-UP CHANGE: RESTORE AND EXPOSE ONLINE MIDI PLAYER
+Date: 2026-08-26
+
+CHANGED BRANCH/FIELD
+branch: main
+original source commit: 7cfdbf7ac5f5aaf80956168bf133fb2207704749
+field: restored the visible post-download Web Audio MIDI player behavior with an explicit player cache version, no-cache revalidation for app.js, a guaranteed hidden=false reveal, and automatic scroll to the player after conversion
+
+FOUR ARTIFACT PATHS
+MODIFIED_FILE: C:\Users\LENOVO\Documents\Playground\image-to-midi-cloudflare-20260824\public\index.html
+DIFF_FILE: C:\Users\LENOVO\Documents\Playground\image-to-midi-cloudflare-20260824\deployment-artifacts\DIFF_FILE.patch
+VERIFICATION.txt: C:\Users\LENOVO\Documents\Playground\image-to-midi-cloudflare-20260824\deployment-artifacts\VERIFICATION.txt
+executable ROLLBACK.sh: C:\Users\LENOVO\Documents\Playground\image-to-midi-cloudflare-20260824\deployment-artifacts\ROLLBACK.sh
+
+BASELINE
+Exact command: cd C:\Users\LENOVO\Documents\Playground\baseline-player-20260826; node tests/modified-test.cjs; node --check public/app.js; node --check public/converter-core.js
+Exact input: detached worktree at 7cfdbf7ac5f5aaf80956168bf133fb2207704749; no stdin.
+Literal output/result:
+MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true download_sponsor_tab=true sponsor_card=removed background=dark midi_header=MThd midi_bytes=66 note_shapes=2 player_notes=2
+Exit status: 0
+
+MODIFIED
+Exact command: cd C:\Users\LENOVO\Documents\Playground\modified-player-20260826; node tests/modified-test.cjs; node --check public/app.js; node --check public/converter-core.js
+Exact input: modified worktree with no stdin.
+Literal output/result:
+MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true player_reveal=true player_scroll=true app_cache_revalidate=true download_sponsor_tab=true sponsor_card=removed background=dark midi_header=MThd midi_bytes=66 note_shapes=2 player_notes=2
+Exit status: 0
+
+ROLLBACK
+Exact command: "C:\Program Files\Git\bin\bash.exe" "C:\Users\LENOVO\Documents\Playground\rollback-test-player-20260826\deployment-artifacts\ROLLBACK.sh"
+Exact input: rollback-test copy based on 7cfdbf7ac5f5aaf80956168bf133fb2207704749 with modified public/, tests/, and executable ROLLBACK.sh.
+Literal output/result:
+HEAD is now at 7cfdbf7 Record cache bust deployment verification
+ROLLBACK source_head=7cfdbf7ac5f5aaf80956168bf133fb2207704749 public_index=present package_json=present original_flask=present
+Restored behavior check: app_script=<script src="/app.js?v=47fbfce" defer></script>; player_marker=True.
+Exit status: 0
+Restored behavior/status: prior player-enabled page and previous cache-busted script reference restored.
+
+IMPLEMENTATION
+public/index.html now references /app.js?v=player-20260826.
+public/_headers adds /app.js Cache-Control: no-cache, must-revalidate so browser cache cannot hide the player fix.
+public/app.js keeps the Web Audio synth, Play/Pause/Stop/seek/volume controls, explicitly removes the hidden attribute in preparePlayer, and scrolls the revealed player into view after conversion.
+
