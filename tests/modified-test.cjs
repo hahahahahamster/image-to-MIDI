@@ -32,7 +32,7 @@ for (const required of [
   "id=\"player-play\" type=\"button\" aria-label=\"Play MIDI preview\" disabled",
   "built-in browser synthesizer",
   "Image to MIDI Converter – Free Online PNG/JPG to MIDI",
-  "<script src=\"/app.js?v=player-visible-20260826\" defer></script>",
+  "<script src=\"/app.js?v=player-preview-20260826\" defer></script>",
   "<meta name=\"referrer\" content=\"no-referrer-when-downgrade\">",
   "ca-pub-8253931220564393",
   "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8253931220564393",
