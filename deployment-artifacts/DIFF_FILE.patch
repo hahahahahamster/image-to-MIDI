@@ -11,10 +11,10 @@ index c7e2f95..032ee46 100755
  cd "$ROOT"
  git cat-file -e "$ORIGINAL_HASH^{commit}"
 diff --git a/deployment-artifacts/VERIFICATION.txt b/deployment-artifacts/VERIFICATION.txt
-index 1b6aa6d..913b32c 100644
+index 1b6aa6d..c66bc9f 100644
 --- a/deployment-artifacts/VERIFICATION.txt
 +++ b/deployment-artifacts/VERIFICATION.txt
-@@ -271,3 +271,69 @@ https://img2midi.online/app.js?v=47fbfce status=200 bytes=23558 sponsorFunction=
+@@ -271,3 +271,86 @@ https://img2midi.online/app.js?v=47fbfce status=200 bytes=23558 sponsorFunction=
  https://572dd4cd.image-to-midi-converter.pages.dev/ status=200 immutableVersionedScript=True sponsorCard=False
  Exit status: 0
  
@@ -84,20 +84,36 @@ index 1b6aa6d..913b32c 100644
 +app.js?v=player-20260826 status=200; downloaded script includes openDownloadSponsor, target="_blank", and pleased-report.com.
 +Exit status: 0
 +
++CACHE POLICY FOLLOW-UP
++Exact command: git push origin main
++Literal result: 74153ae..621837c main -> main
++Exit status: 0
++
++LATEST DEPLOYMENT
++Exact command: node C:\Users\LENOVO\AppData\Local\npm-cache\_npx\0687088c2dae0f28\node_modules\wrangler\bin\wrangler.js pages deploy public --project-name=image-to-midi-converter --branch=main --commit-hash=621837c --commit-message="Force revalidation of player script"
++Literal result: Deployment complete; https://dc0c3b2d.image-to-midi-converter.pages.dev
++Exit status: 0
++
++LATEST PRODUCTION CHECK
++Exact command: PowerShell Invoke-WebRequest checks against https://img2midi.online/ and https://img2midi.online/app.js?v=player-20260826
++Literal output/result:
++home_status=200 player_markup=True player_controls=True versioned_script=True
++app_status=200 player_function=True player_reveal=True player_scroll=True audio_context=True
++Exit status: 0
++
 diff --git a/public/_headers b/public/_headers
-index ad710af..da36483 100644
+index ad710af..5c5bb24 100644
 --- a/public/_headers
 +++ b/public/_headers
-@@ -9,6 +9,9 @@
- /*.js
-   Cache-Control: public, max-age=604800
+@@ -7,7 +7,7 @@
+   X-Robots-Tag: all
  
-+/app.js
+ /*.js
+-  Cache-Control: public, max-age=604800
 +  Cache-Control: no-cache, must-revalidate
-+
+ 
  /*.css
    Cache-Control: public, max-age=604800
- 
 diff --git a/public/app.js b/public/app.js
 index 851cbbe..a7e7831 100644
 --- a/public/app.js
@@ -129,7 +145,7 @@ index cfbdd2c..5a57e1b 100644
    <script>(function(ektwch){var d=document,s=d.createElement('script'),l=d.scripts[d.scripts.length-1];s.settings=ektwch||{};s.src='https://fond-appointment.com/boXxV.sBdBGbl/0/Y/WYcL/Ee-mz9huWZQUUl/k/PmTmcozLNPTaAf0_MXDGkAt_NAzqMA1IMtDSQaxPM/wp';s.async=true;s.referrerPolicy='no-referrer-when-downgrade';l.parentNode.insertBefore(s,l);})({});</script>
    <script>(function(x){var d=document,s=d.createElement('script'),l=d.scripts[d.scripts.length-1];s.settings=x||{};s.src='https://fond-appointment.com/bLXxVJsKd.GWlB0gYiWhcv/kecm/9AujZWUKlAkHPaTqcjzLNSTTA/0pMCjCE/tTNzz-MS1/MHDAQ/yyN/QY';s.async=true;s.referrerPolicy='no-referrer-when-downgrade';l.parentNode.insertBefore(s,l);})({});</script>
 diff --git a/tests/modified-test.cjs b/tests/modified-test.cjs
-index fed37d4..2a8b1ba 100644
+index fed37d4..781d3f0 100644
 --- a/tests/modified-test.cjs
 +++ b/tests/modified-test.cjs
 @@ -28,7 +28,7 @@ for (const required of [
@@ -145,7 +161,7 @@ index fed37d4..2a8b1ba 100644
    assert.ok(fs.existsSync(path.join(__dirname, "../public", file)), `missing public/${file}`);
  }
  const headers = fs.readFileSync(path.join(__dirname, "../public/_headers"), "utf8");
-+assert.ok(headers.includes("/app.js\n  Cache-Control: no-cache, must-revalidate"), "app.js cache must revalidate so player fixes reach visitors");
++assert.ok(headers.includes("/*.js") && headers.includes("Cache-Control: no-cache, must-revalidate"), "JavaScript cache must revalidate so player fixes reach visitors");
  assert.ok(headers.includes("pagead2.googlesyndication.com"), "CSP must allow Google AdSense");
  assert.ok(headers.includes("ep1.adtrafficquality.google"), "CSP must allow AdSense traffic quality");
  assert.ok(headers.includes("ep2.adtrafficquality.google"), "CSP must allow AdSense SODAR");

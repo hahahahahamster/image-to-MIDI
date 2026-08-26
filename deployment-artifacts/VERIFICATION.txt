@@ -337,3 +337,20 @@ image-to-midi-converter.pages.dev status=200 player=True versioned=True
 app.js?v=player-20260826 status=200; downloaded script includes openDownloadSponsor, target="_blank", and pleased-report.com.
 Exit status: 0
 
+CACHE POLICY FOLLOW-UP
+Exact command: git push origin main
+Literal result: 74153ae..621837c main -> main
+Exit status: 0
+
+LATEST DEPLOYMENT
+Exact command: node C:\Users\LENOVO\AppData\Local\npm-cache\_npx\0687088c2dae0f28\node_modules\wrangler\bin\wrangler.js pages deploy public --project-name=image-to-midi-converter --branch=main --commit-hash=621837c --commit-message="Force revalidation of player script"
+Literal result: Deployment complete; https://dc0c3b2d.image-to-midi-converter.pages.dev
+Exit status: 0
+
+LATEST PRODUCTION CHECK
+Exact command: PowerShell Invoke-WebRequest checks against https://img2midi.online/ and https://img2midi.online/app.js?v=player-20260826
+Literal output/result:
+home_status=200 player_markup=True player_controls=True versioned_script=True
+app_status=200 player_function=True player_reveal=True player_scroll=True audio_context=True
+Exit status: 0
+
