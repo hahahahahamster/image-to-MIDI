@@ -402,3 +402,16 @@ After Play: button="Pause MIDI preview"; position=132; elapsed=0:03; duration=0:
 Download event: demo-heart-to-midi.mid; sponsored tab opened separately.
 Exit status: 0
 
+DEPLOYMENT
+Exact auth command: npx --yes wrangler@latest whoami
+Exact deploy command: node C:\Users\LENOVO\AppData\Local\npm-cache\_npx\0687088c2dae0f28\node_modules\wrangler\bin\wrangler.js pages deploy public --project-name=image-to-midi-converter --branch=main --commit-hash=87791b1 --commit-message="Keep MIDI player visible before conversion"
+Literal result: Deployment complete; https://1ec0507b.image-to-midi-converter.pages.dev
+Exit status: 0
+
+PRODUCTION HTTP CHECK
+Exact command: PowerShell Invoke-WebRequest checks against https://img2midi.online/ and https://img2midi.online/app.js?v=player-visible-20260826
+Literal output/result:
+home_status=200 player_markup=True player_visible_markup=True waiting_state=True disabled_play=True versioned_script=True
+app_status=200 player_reveal=True player_scroll=True audio_context=True
+Exit status: 0
+
