@@ -460,3 +460,15 @@ Restored behavior check: preview_prepare=False; sponsor_flow=True.
 Exit status: 0
 Restored behavior/status: the prior preview-only player behavior is restored, while the existing sponsored download flow remains present.
 
+LATEST VERSIONED DEPLOYMENT
+Exact command: node C:\Users\LENOVO\AppData\Local\npm-cache\_npx\0687088c2dae0f28\node_modules\wrangler\bin\wrangler.js pages deploy public --project-name=image-to-midi-converter --branch=main --commit-hash=6449b8c --commit-message="Refresh player preview script version"
+Literal result: Deployment complete; https://909e40d9.image-to-midi-converter.pages.dev
+Exit status: 0
+
+LATEST PRODUCTION HTTP CHECK
+Exact command: PowerShell Invoke-WebRequest checks against https://img2midi.online/ and https://img2midi.online/app.js?v=player-preview-20260826
+Literal output/result:
+home_status=200 player_markup=True player_visible=True versioned_script=True
+app_status=200 preview_prepare=True player_reveal=True player_scroll=True audio_context=True
+Exit status: 0
+

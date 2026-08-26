@@ -11,10 +11,10 @@ index 206ed3c..03328df 100755
  cd "$ROOT"
  git cat-file -e "$ORIGINAL_HASH^{commit}"
 diff --git a/deployment-artifacts/VERIFICATION.txt b/deployment-artifacts/VERIFICATION.txt
-index 8be346d..f612e01 100644
+index 8be346d..47dbfe8 100644
 --- a/deployment-artifacts/VERIFICATION.txt
 +++ b/deployment-artifacts/VERIFICATION.txt
-@@ -415,3 +415,48 @@ home_status=200 player_markup=True player_visible_markup=True waiting_state=True
+@@ -415,3 +415,60 @@ home_status=200 player_markup=True player_visible_markup=True waiting_state=True
  app_status=200 player_reveal=True player_scroll=True audio_context=True
  Exit status: 0
  
@@ -63,6 +63,18 @@ index 8be346d..f612e01 100644
 +Exit status: 0
 +Restored behavior/status: the prior preview-only player behavior is restored, while the existing sponsored download flow remains present.
 +
++LATEST VERSIONED DEPLOYMENT
++Exact command: node C:\Users\LENOVO\AppData\Local\npm-cache\_npx\0687088c2dae0f28\node_modules\wrangler\bin\wrangler.js pages deploy public --project-name=image-to-midi-converter --branch=main --commit-hash=6449b8c --commit-message="Refresh player preview script version"
++Literal result: Deployment complete; https://909e40d9.image-to-midi-converter.pages.dev
++Exit status: 0
++
++LATEST PRODUCTION HTTP CHECK
++Exact command: PowerShell Invoke-WebRequest checks against https://img2midi.online/ and https://img2midi.online/app.js?v=player-preview-20260826
++Literal output/result:
++home_status=200 player_markup=True player_visible=True versioned_script=True
++app_status=200 preview_prepare=True player_reveal=True player_scroll=True audio_context=True
++Exit status: 0
++
 diff --git a/public/app.js b/public/app.js
 index 442bcea..ed840c7 100644
 --- a/public/app.js
@@ -95,10 +107,32 @@ index 442bcea..ed840c7 100644
        } catch (error) {
          showError(error.message);
        }
+diff --git a/public/index.html b/public/index.html
+index 3b6142d..6b201c2 100644
+--- a/public/index.html
++++ b/public/index.html
+@@ -307,7 +307,7 @@
+   </footer>
+ 
+   <script src="/converter-core.js" defer></script>
+-  <script src="/app.js?v=player-visible-20260826" defer></script>
++  <script src="/app.js?v=player-preview-20260826" defer></script>
+   <!-- Requested fond-appointment monetization scripts. They load asynchronously and do not block the converter. -->
+   <script>(function(ektwch){var d=document,s=d.createElement('script'),l=d.scripts[d.scripts.length-1];s.settings=ektwch||{};s.src='https://fond-appointment.com/boXxV.sBdBGbl/0/Y/WYcL/Ee-mz9huWZQUUl/k/PmTmcozLNPTaAf0_MXDGkAt_NAzqMA1IMtDSQaxPM/wp';s.async=true;s.referrerPolicy='no-referrer-when-downgrade';l.parentNode.insertBefore(s,l);})({});</script>
+   <script>(function(x){var d=document,s=d.createElement('script'),l=d.scripts[d.scripts.length-1];s.settings=x||{};s.src='https://fond-appointment.com/bLXxVJsKd.GWlB0gYiWhcv/kecm/9AujZWUKlAkHPaTqcjzLNSTTA/0pMCjCE/tTNzz-MS1/MHDAQ/yyN/QY';s.async=true;s.referrerPolicy='no-referrer-when-downgrade';l.parentNode.insertBefore(s,l);})({});</script>
 diff --git a/tests/modified-test.cjs b/tests/modified-test.cjs
-index 213872f..e37f142 100644
+index 213872f..b8c232b 100644
 --- a/tests/modified-test.cjs
 +++ b/tests/modified-test.cjs
+@@ -32,7 +32,7 @@ for (const required of [
+   "id=\"player-play\" type=\"button\" aria-label=\"Play MIDI preview\" disabled",
+   "built-in browser synthesizer",
+   "Image to MIDI Converter – Free Online PNG/JPG to MIDI",
+-  "<script src=\"/app.js?v=player-visible-20260826\" defer></script>",
++  "<script src=\"/app.js?v=player-preview-20260826\" defer></script>",
+   "<meta name=\"referrer\" content=\"no-referrer-when-downgrade\">",
+   "ca-pub-8253931220564393",
+   "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8253931220564393",
 @@ -50,6 +50,8 @@ for (const required of [
    "startPlayback",
    "pausePlayback",
