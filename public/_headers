@@ -7,9 +7,6 @@
   X-Robots-Tag: all
 
 /*.js
-  Cache-Control: public, max-age=604800
-
-/app.js
   Cache-Control: no-cache, must-revalidate
 
 /*.css

@@ -60,7 +60,7 @@ for (const file of ["robots.txt", "sitemap.xml", "llms.txt", "site.webmanifest",
   assert.ok(fs.existsSync(path.join(__dirname, "../public", file)), `missing public/${file}`);
 }
 const headers = fs.readFileSync(path.join(__dirname, "../public/_headers"), "utf8");
-assert.ok(headers.includes("/app.js\n  Cache-Control: no-cache, must-revalidate"), "app.js cache must revalidate so player fixes reach visitors");
+assert.ok(headers.includes("/*.js") && headers.includes("Cache-Control: no-cache, must-revalidate"), "JavaScript cache must revalidate so player fixes reach visitors");
 assert.ok(headers.includes("pagead2.googlesyndication.com"), "CSP must allow Google AdSense");
 assert.ok(headers.includes("ep1.adtrafficquality.google"), "CSP must allow AdSense traffic quality");
 assert.ok(headers.includes("ep2.adtrafficquality.google"), "CSP must allow AdSense SODAR");
