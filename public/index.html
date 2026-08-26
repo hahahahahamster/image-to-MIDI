@@ -211,17 +211,17 @@
           <div class="roll-stage"><canvas id="roll-canvas" width="800" height="300" aria-label="Preview of detected MIDI notes"></canvas></div>
         </div>
 
-        <section class="midi-player" id="midi-player" aria-labelledby="player-title" hidden>
+        <section class="midi-player" id="midi-player" aria-labelledby="player-title">
           <div class="player-heading">
             <div>
               <p class="step-label">Browser playback</p>
               <h3 id="player-title">Listen to the generated notes</h3>
               <p>The preview uses a lightweight built-in synth. Your DAW instrument may sound different.</p>
             </div>
-            <span class="player-ready"><span aria-hidden="true"></span>MIDI ready</span>
+            <span class="player-ready" id="player-ready"><span aria-hidden="true"></span>Waiting for MIDI</span>
           </div>
           <div class="player-controls">
-            <button class="player-button player-button-primary" id="player-play" type="button" aria-label="Play MIDI preview">
+            <button class="player-button player-button-primary" id="player-play" type="button" aria-label="Play MIDI preview" disabled>
               <svg class="play-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="m7 4 9 6-9 6V4Z"/></svg>
               <svg class="pause-icon" viewBox="0 0 20 20" aria-hidden="true" hidden><path d="M6 4v12M14 4v12"/></svg>
               <span>Play</span>
@@ -240,7 +240,7 @@
               <input id="player-volume" type="range" min="0" max="100" value="55" step="1">
             </label>
           </div>
-          <p class="player-status" id="player-status" role="status" aria-live="polite">Select Play to hear the MIDI preview.</p>
+          <p class="player-status" id="player-status" role="status" aria-live="polite">Convert an image to enable playback.</p>
         </section>
 
         <div class="form-footer">
@@ -307,7 +307,7 @@
   </footer>
 
   <script src="/converter-core.js" defer></script>
-  <script src="/app.js?v=player-20260826" defer></script>
+  <script src="/app.js?v=player-visible-20260826" defer></script>
   <!-- Requested fond-appointment monetization scripts. They load asynchronously and do not block the converter. -->
   <script>(function(ektwch){var d=document,s=d.createElement('script'),l=d.scripts[d.scripts.length-1];s.settings=ektwch||{};s.src='https://fond-appointment.com/boXxV.sBdBGbl/0/Y/WYcL/Ee-mz9huWZQUUl/k/PmTmcozLNPTaAf0_MXDGkAt_NAzqMA1IMtDSQaxPM/wp';s.async=true;s.referrerPolicy='no-referrer-when-downgrade';l.parentNode.insertBefore(s,l);})({});</script>
   <script>(function(x){var d=document,s=d.createElement('script'),l=d.scripts[d.scripts.length-1];s.settings=x||{};s.src='https://fond-appointment.com/bLXxVJsKd.GWlB0gYiWhcv/kecm/9AujZWUKlAkHPaTqcjzLNSTTA/0pMCjCE/tTNzz-MS1/MHDAQ/yyN/QY';s.async=true;s.referrerPolicy='no-referrer-when-downgrade';l.parentNode.insertBefore(s,l);})({});</script>

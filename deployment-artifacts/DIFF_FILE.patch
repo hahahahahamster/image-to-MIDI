@@ -1,30 +1,30 @@
 diff --git a/deployment-artifacts/ROLLBACK.sh b/deployment-artifacts/ROLLBACK.sh
-index c7e2f95..032ee46 100755
+index 032ee46..206ed3c 100755
 --- a/deployment-artifacts/ROLLBACK.sh
 +++ b/deployment-artifacts/ROLLBACK.sh
 @@ -1,6 +1,6 @@
  #!/usr/bin/env sh
  set -eu
--ORIGINAL_HASH="47fbfceccff9c65e8584a8e165321061786b68d4"
-+ORIGINAL_HASH="7cfdbf7ac5f5aaf80956168bf133fb2207704749"
+-ORIGINAL_HASH="7cfdbf7ac5f5aaf80956168bf133fb2207704749"
++ORIGINAL_HASH="b9b1b04d5e1288e2df2713d01c1f68a1ffb690fb"
  ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
  cd "$ROOT"
  git cat-file -e "$ORIGINAL_HASH^{commit}"
 diff --git a/deployment-artifacts/VERIFICATION.txt b/deployment-artifacts/VERIFICATION.txt
-index 1b6aa6d..c66bc9f 100644
+index c66bc9f..f3fa64f 100644
 --- a/deployment-artifacts/VERIFICATION.txt
 +++ b/deployment-artifacts/VERIFICATION.txt
-@@ -271,3 +271,86 @@ https://img2midi.online/app.js?v=47fbfce status=200 bytes=23558 sponsorFunction=
- https://572dd4cd.image-to-midi-converter.pages.dev/ status=200 immutableVersionedScript=True sponsorCard=False
+@@ -354,3 +354,51 @@ home_status=200 player_markup=True player_controls=True versioned_script=True
+ app_status=200 player_function=True player_reveal=True player_scroll=True audio_context=True
  Exit status: 0
  
-+FOLLOW-UP CHANGE: RESTORE AND EXPOSE ONLINE MIDI PLAYER
++FOLLOW-UP CHANGE: MAKE MIDI PLAYER ALWAYS VISIBLE
 +Date: 2026-08-26
 +
 +CHANGED BRANCH/FIELD
 +branch: main
-+original source commit: 7cfdbf7ac5f5aaf80956168bf133fb2207704749
-+field: restored the visible post-download Web Audio MIDI player behavior with an explicit player cache version, no-cache revalidation for app.js, a guaranteed hidden=false reveal, and automatic scroll to the player after conversion
++original source commit: b9b1b04d5e1288e2df2713d01c1f68a1ffb690fb
++field: removed the initial hidden state from the player, added a visible disabled Play MIDI preview button with Waiting for MIDI state, enabled it after conversion, and added a distinct app cache version
 +
 +FOUR ARTIFACT PATHS
 +MODIFIED_FILE: C:\Users\LENOVO\Documents\Playground\image-to-midi-cloudflare-20260824\public\index.html
@@ -33,140 +33,142 @@ index 1b6aa6d..c66bc9f 100644
 +executable ROLLBACK.sh: C:\Users\LENOVO\Documents\Playground\image-to-midi-cloudflare-20260824\deployment-artifacts\ROLLBACK.sh
 +
 +BASELINE
-+Exact command: cd C:\Users\LENOVO\Documents\Playground\baseline-player-20260826; node tests/modified-test.cjs; node --check public/app.js; node --check public/converter-core.js
-+Exact input: detached worktree at 7cfdbf7ac5f5aaf80956168bf133fb2207704749; no stdin.
++Exact command: cd C:\Users\LENOVO\Documents\Playground\baseline-visible-player-20260826; node tests/modified-test.cjs; node --check public/app.js; node --check public/converter-core.js
++Exact input: detached worktree at b9b1b04d5e1288e2df2713d01c1f68a1ffb690fb; no stdin.
 +Literal output/result:
-+MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true download_sponsor_tab=true sponsor_card=removed background=dark midi_header=MThd midi_bytes=66 note_shapes=2 player_notes=2
++MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true player_reveal=true player_scroll=true app_cache_revalidate=true download_sponsor_tab=true sponsor_card=removed background=dark midi_header=MThd midi_bytes=66 note_shapes=2 player_notes=2
 +Exit status: 0
 +
 +MODIFIED
-+Exact command: cd C:\Users\LENOVO\Documents\Playground\modified-player-20260826; node tests/modified-test.cjs; node --check public/app.js; node --check public/converter-core.js
++Exact command: cd C:\Users\LENOVO\Documents\Playground\modified-visible-player-20260826; node tests/modified-test.cjs; node --check public/app.js; node --check public/converter-core.js
 +Exact input: modified worktree with no stdin.
 +Literal output/result:
 +MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true player_reveal=true player_scroll=true app_cache_revalidate=true download_sponsor_tab=true sponsor_card=removed background=dark midi_header=MThd midi_bytes=66 note_shapes=2 player_notes=2
 +Exit status: 0
 +
 +ROLLBACK
-+Exact command: "C:\Program Files\Git\bin\bash.exe" "C:\Users\LENOVO\Documents\Playground\rollback-test-player-20260826\deployment-artifacts\ROLLBACK.sh"
-+Exact input: rollback-test copy based on 7cfdbf7ac5f5aaf80956168bf133fb2207704749 with modified public/, tests/, and executable ROLLBACK.sh.
++Exact command: "C:\Program Files\Git\bin\bash.exe" "C:\Users\LENOVO\Documents\Playground\rollback-test-visible-player-20260826\deployment-artifacts\ROLLBACK.sh"
++Exact input: rollback-test copy based on b9b1b04d5e1288e2df2713d01c1f68a1ffb690fb with modified public/, tests/, and executable ROLLBACK.sh.
 +Literal output/result:
-+HEAD is now at 7cfdbf7 Record cache bust deployment verification
-+ROLLBACK source_head=7cfdbf7ac5f5aaf80956168bf133fb2207704749 public_index=present package_json=present original_flask=present
-+Restored behavior check: app_script=<script src="/app.js?v=47fbfce" defer></script>; player_marker=True.
++HEAD is now at b9b1b04 Record final player deployment
++ROLLBACK source_head=b9b1b04d5e1288e2df2713d01c1f68a1ffb690fb public_index=present package_json=present original_flask=present
++Restored behavior check: player_hidden=True; visible_disabled=False; versioned=False.
 +Exit status: 0
-+Restored behavior/status: prior player-enabled page and previous cache-busted script reference restored.
++Restored behavior/status: the prior hidden-until-conversion player page is restored.
 +
-+IMPLEMENTATION
-+public/index.html now references /app.js?v=player-20260826.
-+public/_headers adds /app.js Cache-Control: no-cache, must-revalidate so browser cache cannot hide the player fix.
-+public/app.js keeps the Web Audio synth, Play/Pause/Stop/seek/volume controls, explicitly removes the hidden attribute in preparePlayer, and scrolls the revealed player into view after conversion.
-+
-+DEPLOYMENT
-+Exact auth command: npx --yes wrangler@latest whoami
-+Exact deploy command: node C:\Users\LENOVO\AppData\Local\npm-cache\_npx\0687088c2dae0f28\node_modules\wrangler\bin\wrangler.js pages deploy public --project-name=image-to-midi-converter --branch=main --commit-hash=b133336 --commit-message="Restore online MIDI player after download"
-+Literal result: Deployment complete; https://20688f46.image-to-midi-converter.pages.dev
-+Exit status: 0
-+
-+PRODUCTION BROWSER CHECK
-+Exact command: npx --yes --package @playwright/cli playwright-cli reload; snapshot; click "Use demo pattern"; click "Convert and download"; snapshot; click "Play MIDI preview"; snapshot
++LOCAL BROWSER CHECK
++Exact command: npx --yes --package @playwright/cli playwright-cli open http://127.0.0.1:8790; snapshot; click "Use demo pattern"; click "Convert and download"; snapshot; click "Play MIDI preview"; snapshot
 +Exact input: existing demo-heart.png fixture.
 +Literal output/result:
-+After conversion: Browser playback region visible; heading="Listen to the generated notes"; player status="MIDI ready: 144 note shapes. Select Play to preview."; duration=0:25.
-+After Play: button="Pause MIDI preview"; position=133; elapsed=0:03; duration=0:25; status="Playing 144 note shapes with the browser synth."
-+Download event: demo-heart-to-midi.mid; sponsored new tabs opened separately.
++Initial snapshot: Browser playback region visible; ready label="Waiting for MIDI"; Play MIDI preview button disabled; status="Convert an image to enable playback."
++After conversion: ready label="MIDI ready"; Play MIDI preview button enabled; duration=0:25; status="MIDI ready: 144 note shapes. Select Play to preview."
++After Play: button="Pause MIDI preview"; position=132; elapsed=0:03; duration=0:25; status="Playing 144 note shapes with the browser synth."
++Download event: demo-heart-to-midi.mid; sponsored tab opened separately.
 +Exit status: 0
 +
-+PRODUCTION HTTP CHECK
-+Exact command: PowerShell Invoke-WebRequest checks against https://img2midi.online/, https://img2midi.online/app.js?v=player-20260826, and https://image-to-midi-converter.pages.dev/
-+Literal output/result:
-+home_status=200 player_markup=True player_controls=True player_script=True player_reveal=True player_scroll=True audio_context=True
-+image-to-midi-converter.pages.dev status=200 player=True versioned=True
-+app.js?v=player-20260826 status=200; downloaded script includes openDownloadSponsor, target="_blank", and pleased-report.com.
-+Exit status: 0
-+
-+CACHE POLICY FOLLOW-UP
-+Exact command: git push origin main
-+Literal result: 74153ae..621837c main -> main
-+Exit status: 0
-+
-+LATEST DEPLOYMENT
-+Exact command: node C:\Users\LENOVO\AppData\Local\npm-cache\_npx\0687088c2dae0f28\node_modules\wrangler\bin\wrangler.js pages deploy public --project-name=image-to-midi-converter --branch=main --commit-hash=621837c --commit-message="Force revalidation of player script"
-+Literal result: Deployment complete; https://dc0c3b2d.image-to-midi-converter.pages.dev
-+Exit status: 0
-+
-+LATEST PRODUCTION CHECK
-+Exact command: PowerShell Invoke-WebRequest checks against https://img2midi.online/ and https://img2midi.online/app.js?v=player-20260826
-+Literal output/result:
-+home_status=200 player_markup=True player_controls=True versioned_script=True
-+app_status=200 player_function=True player_reveal=True player_scroll=True audio_context=True
-+Exit status: 0
-+
-diff --git a/public/_headers b/public/_headers
-index ad710af..5c5bb24 100644
---- a/public/_headers
-+++ b/public/_headers
-@@ -7,7 +7,7 @@
-   X-Robots-Tag: all
- 
- /*.js
--  Cache-Control: public, max-age=604800
-+  Cache-Control: no-cache, must-revalidate
- 
- /*.css
-   Cache-Control: public, max-age=604800
 diff --git a/public/app.js b/public/app.js
-index 851cbbe..a7e7831 100644
+index a7e7831..442bcea 100644
 --- a/public/app.js
 +++ b/public/app.js
-@@ -295,10 +295,12 @@
-       durationSeconds: conversion.midi.durationBeats * secondsPerBeat
+@@ -34,6 +34,7 @@
+   const playerDuration = document.getElementById("player-duration");
+   const playerVolume = document.getElementById("player-volume");
+   const playerStatus = document.getElementById("player-status");
++  const playerReady = document.getElementById("player-ready");
+   const DOWNLOAD_SPONSOR_URL = "https://pleased-report.com/b.3sVT0YP-3VpXv/bVm-VTJVZHDQ0/3HMVzoU-wQM/zPYL1/LNT/cqzUNNTlAlz/NtjJkQ";
+   let currentFile = null;
+   let currentImage = null;
+@@ -296,6 +297,7 @@
      };
      midiPlayer.hidden = false;
-+    midiPlayer.removeAttribute("hidden");
+     midiPlayer.removeAttribute("hidden");
++    playerReady.textContent = playerData.notes.length ? "MIDI ready" : "No notes detected";
      playerStatus.textContent = playerData.notes.length
        ? `MIDI ready: ${playerData.notes.length.toLocaleString()} note shapes. Select Play to preview.`
        : "The generated MIDI contains no notes. Adjust the image or threshold and convert again.";
-     updatePlayerPosition(0);
-+    requestAnimationFrame(() => midiPlayer.scrollIntoView({ behavior: "smooth", block: "nearest" }));
+@@ -304,9 +306,12 @@
    }
  
    function invalidatePlayer() {
+-    if (playerData || !midiPlayer.hidden) stopPlayback(true);
++    if (playerData) stopPlayback(true);
+     playerData = null;
+-    midiPlayer.hidden = true;
++    midiPlayer.hidden = false;
++    midiPlayer.removeAttribute("hidden");
++    playerReady.textContent = "Waiting for MIDI";
++    playerStatus.textContent = "Convert an image to enable playback.";
+     updatePlayerPosition(0);
+   }
+ 
 diff --git a/public/index.html b/public/index.html
-index cfbdd2c..5a57e1b 100644
+index 5a57e1b..3b6142d 100644
 --- a/public/index.html
 +++ b/public/index.html
+@@ -211,17 +211,17 @@
+           <div class="roll-stage"><canvas id="roll-canvas" width="800" height="300" aria-label="Preview of detected MIDI notes"></canvas></div>
+         </div>
+ 
+-        <section class="midi-player" id="midi-player" aria-labelledby="player-title" hidden>
++        <section class="midi-player" id="midi-player" aria-labelledby="player-title">
+           <div class="player-heading">
+             <div>
+               <p class="step-label">Browser playback</p>
+               <h3 id="player-title">Listen to the generated notes</h3>
+               <p>The preview uses a lightweight built-in synth. Your DAW instrument may sound different.</p>
+             </div>
+-            <span class="player-ready"><span aria-hidden="true"></span>MIDI ready</span>
++            <span class="player-ready" id="player-ready"><span aria-hidden="true"></span>Waiting for MIDI</span>
+           </div>
+           <div class="player-controls">
+-            <button class="player-button player-button-primary" id="player-play" type="button" aria-label="Play MIDI preview">
++            <button class="player-button player-button-primary" id="player-play" type="button" aria-label="Play MIDI preview" disabled>
+               <svg class="play-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="m7 4 9 6-9 6V4Z"/></svg>
+               <svg class="pause-icon" viewBox="0 0 20 20" aria-hidden="true" hidden><path d="M6 4v12M14 4v12"/></svg>
+               <span>Play</span>
+@@ -240,7 +240,7 @@
+               <input id="player-volume" type="range" min="0" max="100" value="55" step="1">
+             </label>
+           </div>
+-          <p class="player-status" id="player-status" role="status" aria-live="polite">Select Play to hear the MIDI preview.</p>
++          <p class="player-status" id="player-status" role="status" aria-live="polite">Convert an image to enable playback.</p>
+         </section>
+ 
+         <div class="form-footer">
 @@ -307,7 +307,7 @@
    </footer>
  
    <script src="/converter-core.js" defer></script>
--  <script src="/app.js?v=47fbfce" defer></script>
-+  <script src="/app.js?v=player-20260826" defer></script>
+-  <script src="/app.js?v=player-20260826" defer></script>
++  <script src="/app.js?v=player-visible-20260826" defer></script>
    <!-- Requested fond-appointment monetization scripts. They load asynchronously and do not block the converter. -->
    <script>(function(ektwch){var d=document,s=d.createElement('script'),l=d.scripts[d.scripts.length-1];s.settings=ektwch||{};s.src='https://fond-appointment.com/boXxV.sBdBGbl/0/Y/WYcL/Ee-mz9huWZQUUl/k/PmTmcozLNPTaAf0_MXDGkAt_NAzqMA1IMtDSQaxPM/wp';s.async=true;s.referrerPolicy='no-referrer-when-downgrade';l.parentNode.insertBefore(s,l);})({});</script>
    <script>(function(x){var d=document,s=d.createElement('script'),l=d.scripts[d.scripts.length-1];s.settings=x||{};s.src='https://fond-appointment.com/bLXxVJsKd.GWlB0gYiWhcv/kecm/9AujZWUKlAkHPaTqcjzLNSTTA/0pMCjCE/tTNzz-MS1/MHDAQ/yyN/QY';s.async=true;s.referrerPolicy='no-referrer-when-downgrade';l.parentNode.insertBefore(s,l);})({});</script>
 diff --git a/tests/modified-test.cjs b/tests/modified-test.cjs
-index fed37d4..781d3f0 100644
+index 781d3f0..213872f 100644
 --- a/tests/modified-test.cjs
 +++ b/tests/modified-test.cjs
-@@ -28,7 +28,7 @@ for (const required of [
+@@ -26,9 +26,13 @@ for (const required of [
+   "\"@type\": \"FAQPage\"",
+   "entire conversion runs locally in your browser",
    "id=\"midi-player\"",
++  "id=\"player-ready\"",
++  "Waiting for MIDI",
++  "Convert an image to enable playback.",
++  "id=\"player-play\" type=\"button\" aria-label=\"Play MIDI preview\" disabled",
    "built-in browser synthesizer",
    "Image to MIDI Converter – Free Online PNG/JPG to MIDI",
--  "<script src=\"/app.js?v=47fbfce\" defer></script>",
-+  "<script src=\"/app.js?v=player-20260826\" defer></script>",
+-  "<script src=\"/app.js?v=player-20260826\" defer></script>",
++  "<script src=\"/app.js?v=player-visible-20260826\" defer></script>",
    "<meta name=\"referrer\" content=\"no-referrer-when-downgrade\">",
    "ca-pub-8253931220564393",
    "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8253931220564393",
-@@ -60,10 +60,11 @@ for (const file of ["robots.txt", "sitemap.xml", "llms.txt", "site.webmanifest",
-   assert.ok(fs.existsSync(path.join(__dirname, "../public", file)), `missing public/${file}`);
- }
- const headers = fs.readFileSync(path.join(__dirname, "../public/_headers"), "utf8");
-+assert.ok(headers.includes("/*.js") && headers.includes("Cache-Control: no-cache, must-revalidate"), "JavaScript cache must revalidate so player fixes reach visitors");
- assert.ok(headers.includes("pagead2.googlesyndication.com"), "CSP must allow Google AdSense");
- assert.ok(headers.includes("ep1.adtrafficquality.google"), "CSP must allow AdSense traffic quality");
- assert.ok(headers.includes("ep2.adtrafficquality.google"), "CSP must allow AdSense SODAR");
- assert.ok(headers.includes("https://www.google.com"), "CSP must allow the AdSense verification frame");
- assert.ok(headers.includes("fond-appointment.com"), "CSP must allow fond-appointment scripts");
- 
--console.log(`MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true download_sponsor_tab=true sponsor_card=removed background=${detected} midi_header=${Buffer.from(midi.bytes.subarray(0, 4)).toString("ascii")} midi_bytes=${midi.bytes.length} note_shapes=${midi.noteCount} player_notes=${midi.notes.length}`);
-+console.log(`MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true player_reveal=true player_scroll=true app_cache_revalidate=true download_sponsor_tab=true sponsor_card=removed background=${detected} midi_header=${Buffer.from(midi.bytes.subarray(0, 4)).toString("ascii")} midi_bytes=${midi.bytes.length} note_shapes=${midi.noteCount} player_notes=${midi.notes.length}`);
+@@ -46,6 +50,8 @@ for (const required of [
+   "startPlayback",
+   "pausePlayback",
+   "preparePlayer",
++  "removeAttribute(\"hidden\")",
++  "scrollIntoView",
+   "player-position",
+   "DOWNLOAD_SPONSOR_URL",
+   "openDownloadSponsor",

@@ -34,6 +34,7 @@
   const playerDuration = document.getElementById("player-duration");
   const playerVolume = document.getElementById("player-volume");
   const playerStatus = document.getElementById("player-status");
+  const playerReady = document.getElementById("player-ready");
   const DOWNLOAD_SPONSOR_URL = "https://pleased-report.com/b.3sVT0YP-3VpXv/bVm-VTJVZHDQ0/3HMVzoU-wQM/zPYL1/LNT/cqzUNNTlAlz/NtjJkQ";
   let currentFile = null;
   let currentImage = null;
@@ -296,6 +297,7 @@
     };
     midiPlayer.hidden = false;
     midiPlayer.removeAttribute("hidden");
+    playerReady.textContent = playerData.notes.length ? "MIDI ready" : "No notes detected";
     playerStatus.textContent = playerData.notes.length
       ? `MIDI ready: ${playerData.notes.length.toLocaleString()} note shapes. Select Play to preview.`
       : "The generated MIDI contains no notes. Adjust the image or threshold and convert again.";
@@ -304,9 +306,12 @@
   }
 
   function invalidatePlayer() {
-    if (playerData || !midiPlayer.hidden) stopPlayback(true);
+    if (playerData) stopPlayback(true);
     playerData = null;
-    midiPlayer.hidden = true;
+    midiPlayer.hidden = false;
+    midiPlayer.removeAttribute("hidden");
+    playerReady.textContent = "Waiting for MIDI";
+    playerStatus.textContent = "Convert an image to enable playback.";
     updatePlayerPosition(0);
   }
 

@@ -354,3 +354,51 @@ home_status=200 player_markup=True player_controls=True versioned_script=True
 app_status=200 player_function=True player_reveal=True player_scroll=True audio_context=True
 Exit status: 0
 
+FOLLOW-UP CHANGE: MAKE MIDI PLAYER ALWAYS VISIBLE
+Date: 2026-08-26
+
+CHANGED BRANCH/FIELD
+branch: main
+original source commit: b9b1b04d5e1288e2df2713d01c1f68a1ffb690fb
+field: removed the initial hidden state from the player, added a visible disabled Play MIDI preview button with Waiting for MIDI state, enabled it after conversion, and added a distinct app cache version
+
+FOUR ARTIFACT PATHS
+MODIFIED_FILE: C:\Users\LENOVO\Documents\Playground\image-to-midi-cloudflare-20260824\public\index.html
+DIFF_FILE: C:\Users\LENOVO\Documents\Playground\image-to-midi-cloudflare-20260824\deployment-artifacts\DIFF_FILE.patch
+VERIFICATION.txt: C:\Users\LENOVO\Documents\Playground\image-to-midi-cloudflare-20260824\deployment-artifacts\VERIFICATION.txt
+executable ROLLBACK.sh: C:\Users\LENOVO\Documents\Playground\image-to-midi-cloudflare-20260824\deployment-artifacts\ROLLBACK.sh
+
+BASELINE
+Exact command: cd C:\Users\LENOVO\Documents\Playground\baseline-visible-player-20260826; node tests/modified-test.cjs; node --check public/app.js; node --check public/converter-core.js
+Exact input: detached worktree at b9b1b04d5e1288e2df2713d01c1f68a1ffb690fb; no stdin.
+Literal output/result:
+MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true player_reveal=true player_scroll=true app_cache_revalidate=true download_sponsor_tab=true sponsor_card=removed background=dark midi_header=MThd midi_bytes=66 note_shapes=2 player_notes=2
+Exit status: 0
+
+MODIFIED
+Exact command: cd C:\Users\LENOVO\Documents\Playground\modified-visible-player-20260826; node tests/modified-test.cjs; node --check public/app.js; node --check public/converter-core.js
+Exact input: modified worktree with no stdin.
+Literal output/result:
+MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true player_reveal=true player_scroll=true app_cache_revalidate=true download_sponsor_tab=true sponsor_card=removed background=dark midi_header=MThd midi_bytes=66 note_shapes=2 player_notes=2
+Exit status: 0
+
+ROLLBACK
+Exact command: "C:\Program Files\Git\bin\bash.exe" "C:\Users\LENOVO\Documents\Playground\rollback-test-visible-player-20260826\deployment-artifacts\ROLLBACK.sh"
+Exact input: rollback-test copy based on b9b1b04d5e1288e2df2713d01c1f68a1ffb690fb with modified public/, tests/, and executable ROLLBACK.sh.
+Literal output/result:
+HEAD is now at b9b1b04 Record final player deployment
+ROLLBACK source_head=b9b1b04d5e1288e2df2713d01c1f68a1ffb690fb public_index=present package_json=present original_flask=present
+Restored behavior check: player_hidden=True; visible_disabled=False; versioned=False.
+Exit status: 0
+Restored behavior/status: the prior hidden-until-conversion player page is restored.
+
+LOCAL BROWSER CHECK
+Exact command: npx --yes --package @playwright/cli playwright-cli open http://127.0.0.1:8790; snapshot; click "Use demo pattern"; click "Convert and download"; snapshot; click "Play MIDI preview"; snapshot
+Exact input: existing demo-heart.png fixture.
+Literal output/result:
+Initial snapshot: Browser playback region visible; ready label="Waiting for MIDI"; Play MIDI preview button disabled; status="Convert an image to enable playback."
+After conversion: ready label="MIDI ready"; Play MIDI preview button enabled; duration=0:25; status="MIDI ready: 144 note shapes. Select Play to preview."
+After Play: button="Pause MIDI preview"; position=132; elapsed=0:03; duration=0:25; status="Playing 144 note shapes with the browser synth."
+Download event: demo-heart-to-midi.mid; sponsored tab opened separately.
+Exit status: 0
+
