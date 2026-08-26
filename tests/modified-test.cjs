@@ -50,6 +50,8 @@ for (const required of [
   "startPlayback",
   "pausePlayback",
   "preparePlayer",
+  "preparePlayer(lastConversion, { scroll: false })",
+  "MIDI ready to play or download",
   "removeAttribute(\"hidden\")",
   "scrollIntoView",
   "player-position",

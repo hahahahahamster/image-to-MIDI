@@ -415,3 +415,48 @@ home_status=200 player_markup=True player_visible_markup=True waiting_state=True
 app_status=200 player_reveal=True player_scroll=True audio_context=True
 Exit status: 0
 
+FOLLOW-UP CHANGE: ENABLE PLAYBACK FROM THE IMAGE PREVIEW
+Date: 2026-08-26
+
+CHANGED BRANCH/FIELD
+branch: main
+original source commit: a302a2600f8d6d8e845fcda7d3dcc806868382e7
+field: schedulePreview now calls preparePlayer immediately after building the MIDI preview, so the Play MIDI preview button is enabled before download; conversion still downloads the .mid and opens the sponsored tab
+
+FOUR ARTIFACT PATHS
+MODIFIED_FILE: C:\Users\LENOVO\Documents\Playground\image-to-midi-cloudflare-20260824\public\app.js
+DIFF_FILE: C:\Users\LENOVO\Documents\Playground\image-to-midi-cloudflare-20260824\deployment-artifacts\DIFF_FILE.patch
+VERIFICATION.txt: C:\Users\LENOVO\Documents\Playground\image-to-midi-cloudflare-20260824\deployment-artifacts\VERIFICATION.txt
+executable ROLLBACK.sh: C:\Users\LENOVO\Documents\Playground\image-to-midi-cloudflare-20260824\deployment-artifacts\ROLLBACK.sh
+
+BASELINE
+Exact command: cd C:\Users\LENOVO\Documents\Playground\baseline-preview-player-20260826; node tests/modified-test.cjs; node --check public/app.js; node --check public/converter-core.js
+Exact input: detached worktree at a302a2600f8d6d8e845fcda7d3dcc806868382e7; no stdin.
+Literal output/result:
+MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true player_reveal=true player_scroll=true app_cache_revalidate=true download_sponsor_tab=true sponsor_card=removed background=dark midi_header=MThd midi_bytes=66 note_shapes=2 player_notes=2
+Exit status: 0
+
+MODIFIED
+Exact command: cd C:\Users\LENOVO\Documents\Playground\modified-preview-player-20260826; node tests/modified-test.cjs; node --check public/app.js; node --check public/converter-core.js
+Exact input: modified worktree with no stdin.
+Literal output/result:
+MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true player_reveal=true player_scroll=true app_cache_revalidate=true download_sponsor_tab=true sponsor_card=removed background=dark midi_header=MThd midi_bytes=66 note_shapes=2 player_notes=2
+Exit status: 0
+
+LOCAL BROWSER CHECK
+Exact command: npx --yes --package @playwright/cli playwright-cli open http://127.0.0.1:8791; snapshot; click "Use demo pattern"; snapshot; click "Play MIDI preview"; snapshot
+Exact input: existing demo-heart.png fixture; no download required.
+Literal output/result:
+After preview only: player status="MIDI ready: 144 note shapes. Select Play to preview."; Play MIDI preview button enabled; duration=0:25.
+After Play: button="Pause MIDI preview"; position=151; elapsed=0:03; duration=0:25; status="Playing 144 note shapes with the browser synth."
+Exit status: 0
+
+ROLLBACK
+Exact command: "C:\Program Files\Git\bin\bash.exe" "C:\Users\LENOVO\Documents\Playground\rollback-test-preview-player-20260826\deployment-artifacts\ROLLBACK.sh"
+Exact input: rollback-test copy based on a302a2600f8d6d8e845fcda7d3dcc806868382e7 with modified public/, tests/, and executable ROLLBACK.sh.
+Literal output/result:
+ROLLBACK source_head=a302a2600f8d6d8e845fcda7d3dcc806868382e7 public_index=present package_json=present original_flask=present
+Restored behavior check: preview_prepare=False; sponsor_flow=True.
+Exit status: 0
+Restored behavior/status: the prior preview-only player behavior is restored, while the existing sponsored download flow remains present.
+

@@ -287,7 +287,7 @@
     }
   }
 
-  function preparePlayer(conversion) {
+  function preparePlayer(conversion, { scroll = true } = {}) {
     stopPlayback(true);
     const secondsPerBeat = 60 / conversion.settings.tempo;
     playerData = {
@@ -302,7 +302,7 @@
       ? `MIDI ready: ${playerData.notes.length.toLocaleString()} note shapes. Select Play to preview.`
       : "The generated MIDI contains no notes. Adjust the image or threshold and convert again.";
     updatePlayerPosition(0);
-    requestAnimationFrame(() => midiPlayer.scrollIntoView({ behavior: "smooth", block: "nearest" }));
+    if (scroll) requestAnimationFrame(() => midiPlayer.scrollIntoView({ behavior: "smooth", block: "nearest" }));
   }
 
   function invalidatePlayer() {
@@ -369,7 +369,8 @@
       try {
         clearError();
         lastConversion = processCurrentImage();
-        statusMessage.textContent = "Preview updated. Ready to download.";
+        preparePlayer(lastConversion, { scroll: false });
+        statusMessage.textContent = "Preview updated. MIDI ready to play or download.";
       } catch (error) {
         showError(error.message);
       }
