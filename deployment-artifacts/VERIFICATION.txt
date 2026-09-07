@@ -472,3 +472,41 @@ home_status=200 player_markup=True player_visible=True versioned_script=True
 app_status=200 preview_prepare=True player_reveal=True player_scroll=True audio_context=True
 Exit status: 0
 
+FOLLOW-UP CHANGE: ADD PARTNERBOOST VERIFICATION META TAG
+Date: 2026-09-07
+
+CHANGED BRANCH/FIELD
+branch: main
+original source commit: 1b06af19fda2f0e4a57113edfc1de40422a9123d
+field: public/index.html head now includes partnerboostverifycode=32dc01246faccb7f5b3cad5016dd5033; tests require the exact tag
+
+FOUR ARTIFACT PATHS
+MODIFIED_FILE: C:\Users\LENOVO\Documents\Playground\image-to-midi-cloudflare-20260824\public\index.html
+DIFF_FILE: C:\Users\LENOVO\Documents\Playground\image-to-midi-cloudflare-20260824\deployment-artifacts\DIFF_FILE.patch
+VERIFICATION.txt: C:\Users\LENOVO\Documents\Playground\image-to-midi-cloudflare-20260824\deployment-artifacts\VERIFICATION.txt
+executable ROLLBACK.sh: C:\Users\LENOVO\Documents\Playground\image-to-midi-cloudflare-20260824\deployment-artifacts\ROLLBACK.sh
+
+BASELINE
+Exact command: PowerShell reads git show HEAD:public/index.html and checks for the exact requested meta tag.
+Exact input: committed public/index.html at 1b06af19fda2f0e4a57113edfc1de40422a9123d; no stdin.
+Literal output/result:
+BASELINE partnerboost_verify=false
+Exit status: 0
+
+MODIFIED
+Exact command: node tests/modified-test.cjs; node --check public/app.js; node --check public/converter-core.js
+Exact input: modified working tree; no stdin.
+Literal output/result:
+MODIFIED seo_title=true canonical=true schema_types=WebApplication,HowTo,FAQPage web_audio=true player_reveal=true player_scroll=true app_cache_revalidate=true download_sponsor_tab=true sponsor_card=removed background=dark midi_header=MThd midi_bytes=66 note_shapes=2 player_notes=2
+Exit status: 0
+
+ROLLBACK
+Exact command: "C:\Program Files\Git\bin\bash.exe" "C:\Users\LENOVO\Documents\Playground\rollback-test-partnerboost-20260907\deployment-artifacts\ROLLBACK.sh"
+Exact input: detached worktree at 1b06af19fda2f0e4a57113edfc1de40422a9123d overlaid with modified public/index.html, tests/modified-test.cjs, and deployment-artifacts/ROLLBACK.sh.
+Literal output/result:
+HEAD is now at 1b06af1 Record preview playback deployment
+ROLLBACK source_head=1b06af19fda2f0e4a57113edfc1de40422a9123d public_index=present package_json=present original_flask=present
+Restored behavior check: partnerboost_verify=false
+Exit status: 0
+Restored behavior/status: the exact PartnerBoost verification meta tag is absent again, matching the original commit.
+

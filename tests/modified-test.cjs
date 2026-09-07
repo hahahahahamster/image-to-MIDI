@@ -34,6 +34,7 @@ for (const required of [
   "Image to MIDI Converter – Free Online PNG/JPG to MIDI",
   "<script src=\"/app.js?v=player-preview-20260826\" defer></script>",
   "<meta name=\"referrer\" content=\"no-referrer-when-downgrade\">",
+  "<meta name=\"partnerboostverifycode\" content=\"32dc01246faccb7f5b3cad5016dd5033\">",
   "ca-pub-8253931220564393",
   "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8253931220564393",
   "fond-appointment.com/boXxV.sBdBGbl/0/Y/WYcL/Ee-mz9huWZQUUl/k/PmTmcozLNPTaAf0_MXDGkAt_NAzqMA1IMtDSQaxPM/wp",
