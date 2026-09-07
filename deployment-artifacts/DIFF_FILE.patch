@@ -11,10 +11,10 @@ index 03328df..d6d589b 100755
  cd "$ROOT"
  git cat-file -e "$ORIGINAL_HASH^{commit}"
 diff --git a/deployment-artifacts/VERIFICATION.txt b/deployment-artifacts/VERIFICATION.txt
-index 47dbfe8..0e16b6c 100644
+index 47dbfe8..7306052 100644
 --- a/deployment-artifacts/VERIFICATION.txt
 +++ b/deployment-artifacts/VERIFICATION.txt
-@@ -472,3 +472,41 @@ home_status=200 player_markup=True player_visible=True versioned_script=True
+@@ -472,3 +472,56 @@ home_status=200 player_markup=True player_visible=True versioned_script=True
  app_status=200 preview_prepare=True player_reveal=True player_scroll=True audio_context=True
  Exit status: 0
  
@@ -55,6 +55,21 @@ index 47dbfe8..0e16b6c 100644
 +Restored behavior check: partnerboost_verify=false
 +Exit status: 0
 +Restored behavior/status: the exact PartnerBoost verification meta tag is absent again, matching the original commit.
++
++DEPLOYMENT
++Exact auth command: node C:\Users\LENOVO\AppData\Local\npm-cache\_npx\32026684e21afda6\node_modules\wrangler\bin\wrangler.js whoami
++Exact deploy command: node C:\Users\LENOVO\AppData\Local\npm-cache\_npx\32026684e21afda6\node_modules\wrangler\bin\wrangler.js pages deploy public --project-name=image-to-midi-converter --branch=main --commit-hash=39675d1 --commit-message="Add PartnerBoost verification meta tag"
++Literal output/result:
++✨ Deployment complete! Take a peek over at https://1683eb19.image-to-midi-converter.pages.dev
++Exit status: 0
++
++PRODUCTION HTTP CHECK
++Exact command: PowerShell Invoke-WebRequest checks against https://img2midi.online/ and https://1683eb19.image-to-midi-converter.pages.dev/; extract <head> and count the exact requested tag.
++Exact input: GET requests; no stdin.
++Literal output/result:
++url=https://img2midi.online/ status=200 partnerboost_in_head=true tag_count=1
++url=https://1683eb19.image-to-midi-converter.pages.dev/ status=200 partnerboost_in_head=true tag_count=1
++Exit status: 0
 +
 diff --git a/public/index.html b/public/index.html
 index 6b201c2..653051b 100644
